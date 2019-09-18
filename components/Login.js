@@ -3,7 +3,6 @@ import {
     StyleSheet,
     TextInput,
     ScrollView,
-    AsyncStorage,
     Text,
     View,
     Button,
@@ -30,21 +29,27 @@ class Login extends Component {
         };
 
         this.onInputChange = validationService.onInputChange.bind(this);
-        this.getFormValidation = validationService.getFormValidation.bind(this);
+        //this.getFormValidation = validationService.getFormValidation.bind(this);
         this.onLoginPressed = this.onLoginPressed.bind(this);
     }
 
     onLoginPressed() {
-        this.getFormValidation();
-        // const {inputs} = this.state;
-        // const credentials = {
-        //     email: this.state.email,
-        //     password: this.state.password,
-        // };
-        // this.props.login(credentials).then(() => {
-        //     this.setState({email: "", password: ""});
-        //     this.props.navigation.navigate("App");
-        // });
+        const {inputs} = this.state;
+        const submittedInputs = {};
+        const credentials = {};
+        for (const [key, input] of Object.entries(inputs)) {
+            if (input.errorLabel) return;
+            submittedInputs[key] = {
+                ...input,
+                value: "",
+            };
+            credentials[key] = input.value;
+        }
+        this.setState({inputs: updatedInputs}, () => {
+            this.props.login(credentials).then(authToken => {
+                if (authToken) this.props.navigation.navigate("App");
+            });
+        });
     }
 
     renderError(key) {
@@ -81,6 +86,11 @@ class Login extends Component {
                         {this.renderError("password")}
                     </View>
                 </ScrollView>
+                <Text>Password</Text>
+                <Button
+                    title="Register"
+                    onPress={() => this.props.navigation("Register")}
+                />
                 <View style={styles.button}>
                     <Button title="Submit Form" onPress={this.onLoginPressed} />
                 </View>

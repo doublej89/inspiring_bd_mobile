@@ -79,6 +79,10 @@ class Register extends Component {
                     />
                     {this.renderError("confirmPassword")}
                 </View>
+                <Button
+                    title="Login"
+                    onPress={() => this.props.navigation("Login")}
+                />
                 <View style={styles.button}>
                     <Button title="Submit Form" onPress={this.onLoginPressed} />
                 </View>
