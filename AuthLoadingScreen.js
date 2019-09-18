@@ -7,6 +7,8 @@ import {
     View,
 } from "react-native";
 import decode from "jwt-decode";
+import {connect} from "react-redux";
+import {USER_AUTHENTICATED} from "./types";
 
 class AuthLoadingScreen extends React.Component {
     componentDidMount() {
@@ -16,7 +18,16 @@ class AuthLoadingScreen extends React.Component {
     // Fetch the token from storage then navigate to our appropriate place
     _bootstrapAsync = async () => {
         const authToken = await AsyncStorage.getItem("authToken");
-
+        if (authToken) {
+            const decoded = decode(authToken);
+            this.props.dispatch({
+                type: USER_AUTHENTICATED,
+                payload: {
+                    authToken,
+                    currentUserId: decoded.user_id,
+                },
+            });
+        }
         // This will switch to the App screen or Auth screen and this loading
         // screen will be unmounted and thrown away.
         this.props.navigation.navigate(authToken ? "App" : "Auth");
@@ -33,4 +44,4 @@ class AuthLoadingScreen extends React.Component {
     }
 }
 
-export default AuthLoadingScreen;
+export default connect()(AuthLoadingScreen);
