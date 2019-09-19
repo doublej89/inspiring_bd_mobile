@@ -1,5 +1,5 @@
 import {AsyncStorage} from "react-native";
-import {USER_AUTHENTICATED, USER_LOGGED_OUT} from "../types";
+import {USER_AUTHENTICATED, USER_LOGGED_OUT, LOGIN_ERROR} from "../types";
 import decode from "jwt-decode";
 
 export const login = credentials => dispatch => {
@@ -13,6 +13,10 @@ export const login = credentials => dispatch => {
         .then(response => {
             console.log("backend response:");
             console.log(response);
+            if (response.error_message) {
+                dispatch({type: LOGIN_ERROR, payload: response.error_message});
+                return;
+            }
             let decoded;
             if (response.auth_token) {
                 decoded = decode(response.auth_token);

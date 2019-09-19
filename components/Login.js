@@ -35,6 +35,7 @@ class Login extends Component {
 
     onLoginPressed() {
         const {inputs} = this.state;
+        const {login} = this.props;
         const submittedInputs = {};
         const credentials = {};
         for (const [key, input] of Object.entries(inputs)) {
@@ -45,8 +46,8 @@ class Login extends Component {
             };
             credentials[key] = input.value;
         }
-        this.setState({inputs: updatedInputs}, () => {
-            this.props.login(credentials).then(authToken => {
+        this.setState({inputs: submittedInputs}, () => {
+            login(credentials).then(authToken => {
                 if (authToken) this.props.navigation.navigate("App");
             });
         });
@@ -61,6 +62,7 @@ class Login extends Component {
     }
 
     render() {
+        const {auth} = this.props;
         return (
             <View style={styles.container}>
                 <ScrollView>
@@ -86,11 +88,13 @@ class Login extends Component {
                         {this.renderError("password")}
                     </View>
                 </ScrollView>
-                <Text>Password</Text>
-                <Button
-                    title="Register"
-                    onPress={() => this.props.navigation("Register")}
-                />
+                <Text>Don't have an account?</Text>
+                <Text onPress={() => this.props.navigation("Register")}>
+                    Register
+                </Text>
+                {auth && auth.loginError ? (
+                    <Text style={{color: "red"}}>{auth.loginError}</Text>
+                ) : null}
                 <View style={styles.button}>
                     <Button title="Submit Form" onPress={this.onLoginPressed} />
                 </View>
@@ -128,7 +132,11 @@ const styles = StyleSheet.create({
     },
 });
 
+const mapStateToProps = state => ({
+    auth: state.auth,
+});
+
 export default connect(
-    null,
+    mapStateToProps,
     {login},
 )(Login);
