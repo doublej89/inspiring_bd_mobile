@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="240" height="107" viewBox="0 0 240 107">
+  <defs>
+    <clipPath id="clip-path">
+      <rect width="240" height="107" fill="none"/>
+    </clipPath>
+  </defs>
+  <g id="Component_3" data-name="Component 3" clip-path="url(#clip-path)">
+    <g id="NoPath_-_Copy" data-name="NoPath - Copy" fill="none" stroke="#878ffb" stroke-width="4">
+      <rect width="240" height="107" rx="9" stroke="none"/>
+      <rect x="2" y="2" width="236" height="103" rx="7" fill="none"/>
+    </g>
+    <path id="Path_610" data-name="Path 610" d="M-4413.417,277.8l46.98,47.661V277.8Z" transform="translate(4603 -274)" fill="#878ffb"/>
+    <path id="right" d="M14.129,29.972l2.153,2.153L6.21,42.2,0,35.988l2.153-2.153L6.21,37.891Z" transform="translate(215 -18.533)" fill="#fff"/>
+  </g>
+</svg>

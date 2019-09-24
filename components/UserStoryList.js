@@ -14,11 +14,7 @@ class UserStoryList extends Component {
                 <FlatList
                     data={stories}
                     renderItem={({story}) => (
-                        <Story
-                            key={story.id}
-                            story={story}
-                            currentUser={currentUser}
-                        />
+                        <Story key={story.id} story={story} />
                     )}
                     keyExtractor={story => story.id}
                 />
