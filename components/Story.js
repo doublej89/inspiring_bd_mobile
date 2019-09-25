@@ -53,6 +53,12 @@ class Story extends Component {
                             source={require("../assets/icons/loved.svg")}
                             style={{padding: "0 10px 0 25px"}}
                         />
+                        <Text>{story.inspirations_count}</Text>
+                        <Image
+                            source={require("../assets/icons/comment.svg")}
+                            style={{padding: "0 10px 0 25px"}}
+                        />
+                        <Text>{story.comments_count}</Text>
                     </View>
                     <View
                         style={{backgroundColor: "#D8D8D8", height: 1}}></View>

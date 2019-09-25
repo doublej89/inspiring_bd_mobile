@@ -10,6 +10,7 @@ export const login = credentials => dispatch => {
             password: credentials.password,
         }),
     })
+        .then(res => res.json())
         .then(response => {
             console.log("backend response:");
             console.log(response);
@@ -46,21 +47,23 @@ export const signup = credentials => dispatch => {
             password: credentials.password,
             password_confirmation: credentials.password_confirmation,
         }),
-    }).then(response => {
-        let decoded;
-        if (response.auth_token) {
-            decoded = decode(response.auth_token);
-        }
-        AsyncStorage.setItem("authToken", response.auth_token);
-        dispatch({
-            type: USER_AUTHENTICATED,
-            payload: {
-                authToken: response.auth_token,
-                currentUserId: decoded.user_id,
-            },
+    })
+        .then(res => res.json())
+        .then(response => {
+            let decoded;
+            if (response.auth_token) {
+                decoded = decode(response.auth_token);
+            }
+            AsyncStorage.setItem("authToken", response.auth_token);
+            dispatch({
+                type: USER_AUTHENTICATED,
+                payload: {
+                    authToken: response.auth_token,
+                    currentUserId: decoded.user_id,
+                },
+            });
+            return response.auth_token;
         });
-        return response.auth_token;
-    });
 };
 
 export const logout = () => dispatch => {
