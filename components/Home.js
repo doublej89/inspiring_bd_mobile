@@ -13,7 +13,10 @@ class Home extends Component {
                     alignItems: "center",
                 }}>
                 <Text>Home</Text>
-                <Button title="Logout" onPress={this.props.logout} />
+                <Button
+                    title="Logout"
+                    onPress={() => this.props.logout(this.props.navigation)}
+                />
             </View>
         );
     }

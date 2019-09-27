@@ -34,6 +34,7 @@ class Login extends Component {
     }
 
     onLoginPressed() {
+        console.log(this.state);
         const {inputs} = this.state;
         const {login} = this.props;
         const submittedInputs = {};
@@ -47,9 +48,7 @@ class Login extends Component {
             credentials[key] = input.value;
         }
         this.setState({inputs: submittedInputs}, () => {
-            login(credentials).then(authToken => {
-                if (authToken) this.props.navigation.navigate("App");
-            });
+            login(credentials, this.props.navigation);
         });
     }
 

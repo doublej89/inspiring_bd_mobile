@@ -1,36 +1,37 @@
 import {AsyncStorage} from "react-native";
 import {USER_AUTHENTICATED, USER_LOGGED_OUT, LOGIN_ERROR} from "../types";
 import decode from "jwt-decode";
+import axios from "axios";
 
-export const login = credentials => dispatch => {
-    fetch("https://dev.inspiringbangladesh.com/api/v1/auth/login", {
-        method: "POST",
-        body: JSON.stringify({
-            email: credentials.email,
-            password: credentials.password,
-        }),
-    })
-        .then(res => res.json())
+export const login = (credentials, navigation) => dispatch => {
+    axios
+        .post(
+            "https://dev.inspiringbangladesh.com/api/v1/auth/login",
+            credentials,
+        )
         .then(response => {
             console.log("backend response:");
-            console.log(response);
-            if (response.error_message) {
-                dispatch({type: LOGIN_ERROR, payload: response.error_message});
+            console.log(response.data);
+            if (response.data.error_message) {
+                dispatch({
+                    type: LOGIN_ERROR,
+                    payload: response.data.error_message,
+                });
                 return;
             }
             let decoded;
-            if (response.auth_token) {
-                decoded = decode(response.auth_token);
+            if (response.data.auth_token) {
+                decoded = decode(response.data.auth_token);
             }
-            AsyncStorage.setItem("authToken", response.auth_token);
+            AsyncStorage.setItem("authToken", response.data.auth_token);
             dispatch({
                 type: USER_AUTHENTICATED,
                 payload: {
-                    authToken: response.auth_token,
+                    authToken: response.data.auth_token,
                     currentUserId: decoded.user_id,
                 },
             });
-            return response.auth_token;
+            if (response.data.auth_token) navigation.navigate("App");
         })
         .catch(err => {
             console.log("Something went wrong! ");
@@ -38,39 +39,34 @@ export const login = credentials => dispatch => {
         });
 };
 
-export const signup = credentials => dispatch => {
-    fetch("https://dev.inspiringbangladesh.com/api/v1/signup", {
-        method: "POST",
-        body: JSON.stringify({
-            name: credentials.name,
-            email: credentials.email,
-            password: credentials.password,
-            password_confirmation: credentials.password_confirmation,
-        }),
-    })
-        .then(res => res.json())
+export const signup = (credentials, navigation) => dispatch => {
+    axios
+        .post("https://dev.inspiringbangladesh.com/api/v1/signup", credentials)
         .then(response => {
             let decoded;
-            if (response.auth_token) {
-                decoded = decode(response.auth_token);
+            if (response.data.auth_token) {
+                decoded = decode(response.data.auth_token);
             }
-            AsyncStorage.setItem("authToken", response.auth_token);
+            AsyncStorage.setItem("authToken", response.data.auth_token);
             dispatch({
                 type: USER_AUTHENTICATED,
                 payload: {
-                    authToken: response.auth_token,
+                    authToken: response.data.auth_token,
                     currentUserId: decoded.user_id,
                 },
             });
-            return response.auth_token;
+            if (response.data.auth_token) navigation.navigate("App");
         });
 };
 
-export const logout = () => dispatch => {
-    fetch("https://dev.inspiringbangladesh.com/users/sign_out", {
-        method: "DELETE",
-    }).then(response => {
-        AsyncStorage.removeItem("authToken");
+export const logout = navigation => dispatch => {
+    AsyncStorage.removeItem("authToken").then(() => {
         dispatch({type: USER_LOGGED_OUT});
+        navigation.navigate("Auth");
     });
+    // fetch("https://dev.inspiringbangladesh.com/users/sign_out", {
+    //     method: "DELETE",
+    // }).then(response => {
+
+    // });
 };
