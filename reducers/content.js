@@ -6,6 +6,7 @@ const initialState = {
     page: 1,
     hasMoreItems: false,
     refreshing: false,
+    loading: true,
 };
 
 export default function(state = initialState, action) {
@@ -37,6 +38,7 @@ export default function(state = initialState, action) {
                     page: metaData.next_page,
                     hasMoreItems: true,
                     refreshing: false,
+                    loading: false,
                 };
             } else {
                 return {
@@ -46,6 +48,7 @@ export default function(state = initialState, action) {
                     hasMoreItems: false,
                     refreshing: false,
                     page: null,
+                    loading: false,
                 };
             }
         case REFRESH_PAGE:

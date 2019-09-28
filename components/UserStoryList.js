@@ -18,13 +18,11 @@ class UserStoryList extends Component {
 
     render() {
         const {currentUser} = this.props.auth;
-        const {stories, page, loadItems, refreshing} = this.props;
-        console.log("Stories");
-        console.log(stories);
+        const {stories, page, loadItems, refreshing, loading} = this.props;
         const dimensions = Dimensions.get("window");
         const screenWidth = dimensions.width;
         const screenHeight = dimensions.height;
-        return (
+        return !loading ? (
             <FlatList
                 contentContainerStyle={{
                     flex: 1,
@@ -41,6 +39,11 @@ class UserStoryList extends Component {
                 onRefresh={this._handleRefresh}
                 refreshing={refreshing}
             />
+        ) : (
+            <View>
+                <Text style={{alignSelf: "center"}}>Loading stories</Text>
+                <ActivityIndicator />
+            </View>
         );
     }
 }
