@@ -1,18 +1,21 @@
 import {LOAD_STORIES, REFRESH_PAGE} from "../types";
+import axios from "axios";
 
 export const loadItems = page => dispatch => {
-    fetch("https://dev.inspiringbangladesh.com/api/v1/stories", {
-        method: "GET",
-        body: JSON.stringify({
-            per_page: 10,
-            current_user_meta: true,
-            page: page,
-        }),
-    })
-        .then(response => response.json())
+    if (page === null) return;
+    axios
+        .get("https://dev.inspiringbangladesh.com/api/v1/stories", {
+            params: {
+                per_page: 10,
+                current_user_meta: true,
+                page: page,
+            },
+        })
         .then(respJson => {
-            if (respJson.stories)
-                dispatch({type: LOAD_STORIES, payload: respJson});
+            if (respJson.data.stories) {
+                console.log(respJson.data);
+                dispatch({type: LOAD_STORIES, payload: respJson.data});
+            }
         })
         .catch(err => console.log(err));
 };

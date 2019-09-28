@@ -1,6 +1,6 @@
 import React, {Component} from "react";
 import {connect} from "react-redux";
-import {View, FlatList, ActivityIndicator} from "react-native";
+import {View, FlatList, ActivityIndicator, Dimensions} from "react-native";
 import Story from "./Story";
 import StoryForm from "./StoryForm";
 import {loadItems, refreshPage} from "../actions/content";
@@ -19,29 +19,28 @@ class UserStoryList extends Component {
     render() {
         const {currentUser} = this.props.auth;
         const {stories, page, loadItems, refreshing} = this.props;
+        console.log("Stories");
+        console.log(stories);
+        const dimensions = Dimensions.get("window");
+        const screenWidth = dimensions.width;
+        const screenHeight = dimensions.height;
         return (
-            <View
-                style={{
+            <FlatList
+                contentContainerStyle={{
                     flex: 1,
                     flexDirection: "column",
                     height: "100%",
                     width: "100%",
-                    backgroundColor: "#F8F9FF",
-                }}>
-                <StoryForm />
-                <FlatList
-                    data={stories}
-                    renderItem={({story}) => (
-                        <Story key={story.id} story={story} />
-                    )}
-                    keyExtractor={story => story.id}
-                    onEndReached={() => loadItems(page)}
-                    onEndReachedThreshold={0.5}
-                    initialNumToRender={10}
-                    onRefresh={this._handleRefresh}
-                    refreshing={refreshing}
-                />
-            </View>
+                }}
+                data={stories}
+                renderItem={({item}) => <Story story={item} />}
+                keyExtractor={item => item.id.toString()}
+                onEndReached={() => loadItems(page)}
+                onEndReachedThreshold={0.5}
+                initialNumToRender={10}
+                onRefresh={this._handleRefresh}
+                refreshing={refreshing}
+            />
         );
     }
 }

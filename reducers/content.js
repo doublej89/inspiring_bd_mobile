@@ -45,6 +45,7 @@ export default function(state = initialState, action) {
                     inspiredStoryIds: [...inspiredStoryIds],
                     hasMoreItems: false,
                     refreshing: false,
+                    page: null,
                 };
             }
         case REFRESH_PAGE:
