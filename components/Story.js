@@ -1,8 +1,11 @@
 import React, {Component} from "react";
-import {View, Text, Image, StyleSheet} from "react-native";
+import {View, Text, Image, StyleSheet, TouchableHighlight} from "react-native";
 import {connect} from "react-redux";
 import TimeAgo from "react-native-timeago";
 import {cleanHtml} from "../utils";
+import LovedIcon from "../assets/icons/loved.svg";
+import CommentIcon from "../assets/icons/comment.svg";
+import FollowIcon from "../assets/icons/follow.svg";
 
 class Story extends Component {
     render() {
@@ -49,13 +52,8 @@ class Story extends Component {
                                 </Text>
                             )}
                         </View>
-                        <Image
-                            source={require("../assets/icons/follow.svg")}
-                            style={{
-                                marginLeft: "auto",
-                                marginBottom: 15,
-                                width: "100%",
-                            }}
+                        <FollowIcon
+                            style={{marginLeft: "auto", marginBottom: 15}}
                         />
                     </View>
                     <TimeAgo
@@ -65,28 +63,20 @@ class Story extends Component {
                     <Text style={{color: "#7A7979", marginTop: 5}}>
                         {cleanHtml(story.description)}
                     </Text>
-                    <View style={styles.singlePostStat}>
-                        <Image
-                            source={require("../assets/icons/loved.svg")}
-                            style={{
-                                paddingRight: 10,
-                                paddingLeft: 25,
-                                width: 30,
-                                height: 30,
-                            }}
-                        />
-                        <Text>{story.inspirations_count}</Text>
-                        <Image
-                            source={require("../assets/icons/comment.svg")}
-                            style={{
-                                paddingRight: 10,
-                                paddingLeft: 25,
-                                width: 30,
-                                height: 30,
-                            }}
-                        />
-                        <Text>{story.comments_count}</Text>
-                    </View>
+                    <TouchableHighlight
+                        onPress={() =>
+                            this.props.navigation.navigate("Comments", {
+                                storyId: story.id,
+                                commentsCount: story.comments_count,
+                            })
+                        }>
+                        <View style={styles.singlePostStat}>
+                            <LovedIcon />
+                            <Text>{story.inspirations_count}</Text>
+                            <CommentIcon />
+                            <Text>{story.comments_count}</Text>
+                        </View>
+                    </TouchableHighlight>
                     <View
                         style={{
                             backgroundColor: "#D8D8D8",

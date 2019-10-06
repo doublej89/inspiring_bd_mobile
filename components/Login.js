@@ -88,7 +88,7 @@ class Login extends Component {
                     </View>
                 </ScrollView>
                 <Text>Don't have an account?</Text>
-                <Text onPress={() => this.props.navigation("Register")}>
+                <Text onPress={() => this.props.navigation.navigate("Register")}>
                     Register
                 </Text>
                 {auth && auth.loginError ? (

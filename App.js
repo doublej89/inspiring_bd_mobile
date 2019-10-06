@@ -29,6 +29,7 @@ import HomeScreen from "./components/UserStoryList";
 import RegisterScreen from "./components/Register";
 import LoginScreen from "./components/Login";
 import ProfileScreen from "./components/Profile";
+import CommentScreen from "./components/CommentList";
 import AuthLoadingScreen from "./AuthLoadingScreen";
 import {createStore, applyMiddleware} from "redux";
 import {Provider} from "react-redux";
@@ -39,6 +40,7 @@ const store = createStore(reducers, applyMiddleware(thunk));
 
 const AppStack = createStackNavigator({
     Home: HomeScreen,
+    Comments: CommentScreen,
     Profile: ProfileScreen,
 });
 
