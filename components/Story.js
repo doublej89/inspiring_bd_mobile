@@ -6,12 +6,26 @@ import {cleanHtml} from "../utils";
 import LovedIcon from "../assets/icons/loved.svg";
 import CommentIcon from "../assets/icons/comment.svg";
 import FollowIcon from "../assets/icons/follow.svg";
+import SlidingUpPanel from "rn-sliding-up-panel";
+import {
+    loadRootComments,
+    submitComment,
+    setCommentCount,
+} from "../actions/content";
+import {FontAwesomeIcon} from "@fortawesome/react-native-fontawesome";
+import {faHeart} from "@fortawesome/free-solid-svg-icons";
 
 class Story extends Component {
+    componentDidMount() {
+        const {story, setCommentCount} = this.props;
+        setCommentCount(story.comments_count);
+    }
+
     render() {
         const {currentUser} = this.props.auth;
-        let {story} = this.props;
+        let {story, commentCount} = this.props;
         let user = story.user;
+        story.comments_count = commentCount;
         //let {user} = story;
 
         return (
@@ -82,6 +96,26 @@ class Story extends Component {
                             backgroundColor: "#D8D8D8",
                             height: 1,
                         }}></View>
+                    <View
+                        style={{
+                            flexDirection: "row",
+                            paddingHorizontal: 15,
+                            paddingBottom: 15,
+                            paddingTop: 0,
+                        }}>
+                        <TouchableHighlight onPress={() => {}}>
+                            <FontAwesomeIcon
+                                icon={faHeart}
+                                style={{
+                                    fontSize: 28,
+                                    marginTop: 10,
+                                    marginBottom: 10,
+                                    marginRight: 10,
+                                    marginLeft: 10,
+                                }}
+                            />
+                        </TouchableHighlight>
+                    </View>
                 </View>
             </View>
         );
@@ -131,6 +165,14 @@ const styles = StyleSheet.create({
 
 const mapStateToProps = state => ({
     auth: state.auth,
+    comments: state.commentList.comments,
+    page: state.commentList.page,
+    newCommentContent: state.commentList.newCommentContent,
+    hasMoreItems: state.commentList.hasMoreItems,
+    commentCount: state.commentList.commentCount,
 });
 
-export default connect(mapStateToProps)(Story);
+export default connect(
+    mapStateToProps,
+    {loadRootComments, submitComment, setCommentCount},
+)(Story);

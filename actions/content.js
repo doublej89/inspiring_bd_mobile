@@ -1,5 +1,12 @@
-import {LOAD_STORIES, REFRESH_PAGE, LOAD_COMMENTS} from "../types";
+import {
+    LOAD_STORIES,
+    REFRESH_PAGE,
+    LOAD_COMMENTS,
+    SUBMIT_COMMENT,
+    SET_COMMENT_COUNT,
+} from "../types";
 import axios from "axios";
+import {strim} from "../utils";
 
 export const loadItems = page => dispatch => {
     if (page === null) return;
@@ -47,5 +54,33 @@ export const loadRootComments = (
             });
     }
 };
+
+export const submitComment = (
+    newCommentContent,
+    storyId,
+    commentCount,
+) => dispatch => {
+    let commentContent = strim(newCommentContent);
+    if (commentContent.length > 0) {
+        axios
+            .post(
+                `https://dev.inspiringbangladesh.com/api/v1/stories/${storyId}/comments`,
+                {comment: {body: commentContent}},
+            )
+            .then(response => {
+                if (response.data.comment) {
+                    dispatch({
+                        type: SUBMIT_COMMENT,
+                        payload: {comment: response.data.comment, commentCount},
+                    });
+                }
+            });
+    }
+};
+
+export const setCommentCount = commentCount => ({
+    type: SET_COMMENT_COUNT,
+    payload: commentCount,
+});
 
 export const refreshPage = () => ({type: REFRESH_PAGE});
