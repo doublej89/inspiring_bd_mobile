@@ -1,28 +1,26 @@
-import React, {Component} from "react";
+import React from "react";
 import {View, StyleSheet, Image} from "react-native";
+import {cleanHtml} from "../utils";
 
-class Comment extends Component {
-    render() {
-        const {comment} = this.props;
-        return (
-            <View style={styles.commentContainer}>
-                <View style={{flexDirection: "row"}}>
-                    <Image
-                        source={{uri: comment.user.avatar_url}}
-                        style={styles.profilePic}
-                    />
-                    <View style={{marginStart: 10}}>
-                        <Text style={{fontSize: 16, fontWeight: "bold"}}>
-                            {comment.user.name}
-                        </Text>
-                        <Text style={{fontSize: 12}}>
-                            @{comment.user.handle}
-                        </Text>
-                    </View>
+function Comment(props) {
+    const {comment} = props;
+    return (
+        <View style={styles.commentContainer}>
+            <View style={{flexDirection: "row"}}>
+                <Image
+                    source={{uri: comment.user.avatar_url}}
+                    style={styles.profilePic}
+                />
+                <View style={{marginStart: 10}}>
+                    <Text style={{fontSize: 16, fontWeight: "bold"}}>
+                        {comment.user.name}
+                    </Text>
+                    <Text style={{fontSize: 12}}>@{comment.user.handle}</Text>
                 </View>
             </View>
-        );
-    }
+            <Text style={{fontSize: 14}}>{cleanHtml(comment.body)}</Text>
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({

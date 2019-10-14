@@ -10,8 +10,6 @@ export const login = (credentials, navigation) => dispatch => {
             credentials,
         )
         .then(response => {
-            console.log("backend response:");
-            console.log(response.data);
             if (response.data.error_message) {
                 dispatch({
                     type: LOGIN_ERROR,

@@ -1,5 +1,14 @@
 import React, {Component} from "react";
-import {View, Text, Image, StyleSheet, TouchableHighlight} from "react-native";
+import {
+    View,
+    Text,
+    Image,
+    StyleSheet,
+    TouchableHighlight,
+    FlatList,
+    TextInput,
+    PanResponder,
+} from "react-native";
 import {connect} from "react-redux";
 import TimeAgo from "react-native-timeago";
 import {cleanHtml} from "../utils";
@@ -7,6 +16,7 @@ import LovedIcon from "../assets/icons/loved.svg";
 import CommentIcon from "../assets/icons/comment.svg";
 import FollowIcon from "../assets/icons/follow.svg";
 import SlidingUpPanel from "rn-sliding-up-panel";
+import Comment from "./Comment";
 import {
     loadRootComments,
     submitComment,
@@ -16,17 +26,73 @@ import {FontAwesomeIcon} from "@fortawesome/react-native-fontawesome";
 import {faHeart} from "@fortawesome/free-solid-svg-icons";
 
 class Story extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            newCommentContent: "",
+            dragPanel: true,
+        };
+        this._onGrant = this._onGrant.bind(this);
+        this._onRelease = this._onRelease.bind(this);
+        this.handleCommentSubmission = this.handleCommentSubmission.bind(this);
+        this.handleSubmitEditing = this.handleSubmitEditing.bind(this);
+        this._panResponder = PanResponder.create({
+            onStartShouldSetPanResponder: this._onGrant,
+            onMoveShouldSetPanResponder: this._onGrant,
+            onPanResponderRelease: this._onRelease,
+            onPanResponderTerminate: this._onRelease,
+        });
+    }
+
     componentDidMount() {
         const {story, setCommentCount} = this.props;
         setCommentCount(story.comments_count);
     }
 
+    _onGrant() {
+        this.setState({dragPanel: false});
+        return true;
+    }
+
+    _onRelease() {
+        this.setState({dragPanel: true});
+    }
+
+    handleCommentSubmission(evt) {
+        const {submitComment, newCommentContent, story} = this.props;
+        const {newCommentContent} = this.state;
+        if (evt.nativeEvent.key === "Enter") {
+            this.setState({newCommentContent: ""}, () => {
+                submitComment(
+                    newCommentContent,
+                    story.id,
+                    story.comments_count,
+                );
+            });
+        }
+    }
+
+    handleSubmitEditing(evt) {
+        const {text} = evt.nativeEvent;
+        const {story, submitComment} = this.props;
+        this.setState({newCommentContent: ""}, () => {
+            submitComment(text, story.id, story.comments_count);
+        });
+    }
+
     render() {
         const {currentUser} = this.props.auth;
-        let {story, commentCount} = this.props;
-        let user = story.user;
+        let {
+            story,
+            commentCount,
+            comments,
+            loadRootComments,
+            page,
+            hasMoreItems,
+        } = this.props;
+        let {user} = story;
         story.comments_count = commentCount;
-        //let {user} = story;
+        console.log("Number of comments: " + story.comments_count);
 
         return (
             <View style={styles.postContainer}>
@@ -42,7 +108,7 @@ class Story extends Component {
                     <View style={styles.singlePostUser}>
                         {story && story.user && (
                             <Image
-                                source={{uri: user.avatar_url}}
+                                source={{uri: story.user.avatar_url}}
                                 style={styles.profileImage}
                             />
                         )}
@@ -53,7 +119,7 @@ class Story extends Component {
                                         fontSize: 14,
                                         marginBottom: 0,
                                     }}>
-                                    {user.name}
+                                    {story.user.name}
                                 </Text>
                             )}
                             {story.user && (
@@ -103,7 +169,10 @@ class Story extends Component {
                             paddingBottom: 15,
                             paddingTop: 0,
                         }}>
-                        <TouchableHighlight onPress={() => {}}>
+                        <TouchableHighlight
+                            onPress={() => {
+                                this._panel.show();
+                            }}>
                             <FontAwesomeIcon
                                 icon={faHeart}
                                 style={{
@@ -117,6 +186,39 @@ class Story extends Component {
                         </TouchableHighlight>
                     </View>
                 </View>
+                <SlidingUpPanel
+                    allowDragging={this.state.dragPanel}
+                    ref={c => (this._panel = c)}>
+                    <FlatList
+                        contentContainerStyle={{
+                            flex: 1,
+                            flexDirection: "column",
+                            height: "100%",
+                            width: "100%",
+                        }}
+                        data={comments}
+                        renderItem={({item}) => (
+                            <Comment
+                                {...this._panResponder.panHandlers}
+                                comment={item}
+                            />
+                        )}
+                        keyExtractor={item => item.id.toString()}
+                        onEndReached={() =>
+                            loadRootComments(story.id, hasMoreItems, page)
+                        }
+                        onEndReachedThreshold={0.5}
+                        initialNumToRender={10}
+                        {...this._panResponder.panHandlers}
+                    />
+                    <TextInput
+                        onKeyPress={this.handleCommentSubmission}
+                        onChangeText={value =>
+                            this.setState({newCommentContent: value})
+                        }
+                        onSubmitEditing={this.handleSubmitEditing}
+                    />
+                </SlidingUpPanel>
             </View>
         );
     }
@@ -167,7 +269,6 @@ const mapStateToProps = state => ({
     auth: state.auth,
     comments: state.commentList.comments,
     page: state.commentList.page,
-    newCommentContent: state.commentList.newCommentContent,
     hasMoreItems: state.commentList.hasMoreItems,
     commentCount: state.commentList.commentCount,
 });

@@ -34,7 +34,6 @@ class Login extends Component {
     }
 
     onLoginPressed() {
-        console.log(this.state);
         const {inputs} = this.state;
         const {login} = this.props;
         const submittedInputs = {};
@@ -88,7 +87,8 @@ class Login extends Component {
                     </View>
                 </ScrollView>
                 <Text>Don't have an account?</Text>
-                <Text onPress={() => this.props.navigation.navigate("Register")}>
+                <Text
+                    onPress={() => this.props.navigation.navigate("Register")}>
                     Register
                 </Text>
                 {auth && auth.loginError ? (
