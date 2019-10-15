@@ -59,6 +59,7 @@ export const submitComment = (
     newCommentContent,
     storyId,
     commentCount,
+    authToken,
 ) => dispatch => {
     let commentContent = strim(newCommentContent);
     if (commentContent.length > 0) {
@@ -66,6 +67,11 @@ export const submitComment = (
             .post(
                 `https://dev.inspiringbangladesh.com/api/v1/stories/${storyId}/comments`,
                 {comment: {body: commentContent}},
+                {
+                    headers: {
+                        Authorization: authToken,
+                    },
+                },
             )
             .then(response => {
                 if (response.data.comment) {

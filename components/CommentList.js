@@ -1,7 +1,7 @@
 import React, {Component} from "react";
 import {View, FlatList} from "react-native";
 import {connect} from "react-redux";
-import {loadRootComments} from "../actions/content";
+import {loadRootComments, submitComment} from "../actions/content";
 
 class CommentList extends Component {
     constructor(props) {
@@ -31,5 +31,5 @@ const mapStateToProps = state => ({
 
 export default connect(
     mapStateToProps,
-    {loadRootComments},
+    {loadRootComments, submitComment},
 )(CommentList);

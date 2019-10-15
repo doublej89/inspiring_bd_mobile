@@ -59,7 +59,7 @@ class Story extends Component {
     }
 
     handleCommentSubmission(evt) {
-        const {submitComment, newCommentContent, story} = this.props;
+        const {submitComment, story, authToken} = this.props;
         const {newCommentContent} = this.state;
         if (evt.nativeEvent.key === "Enter") {
             this.setState({newCommentContent: ""}, () => {
@@ -67,6 +67,7 @@ class Story extends Component {
                     newCommentContent,
                     story.id,
                     story.comments_count,
+                    authToken,
                 );
             });
         }
@@ -74,14 +75,13 @@ class Story extends Component {
 
     handleSubmitEditing(evt) {
         const {text} = evt.nativeEvent;
-        const {story, submitComment} = this.props;
+        const {story, submitComment, authToken} = this.props;
         this.setState({newCommentContent: ""}, () => {
-            submitComment(text, story.id, story.comments_count);
+            submitComment(text, story.id, story.comments_count, authToken);
         });
     }
 
     render() {
-        const {currentUser} = this.props.auth;
         let {
             story,
             commentCount,
@@ -138,22 +138,29 @@ class Story extends Component {
                     </View>
                     <TimeAgo
                         time={story.created_at}
-                        style={{marginLeft: 10, marginRight: 10, fontSize: 12}}
+                        style={{
+                            marginLeft: 10,
+                            marginRight: 10,
+                            fontSize: 12,
+                        }}
                     />
                     <Text style={{color: "#7A7979", marginTop: 5}}>
                         {cleanHtml(story.description)}
                     </Text>
                     <TouchableHighlight
-                        onPress={() =>
-                            this.props.navigation.navigate("Comments", {
-                                storyId: story.id,
-                                commentsCount: story.comments_count,
-                            })
-                        }>
+                        onPress={() => {
+                            loadRootComments(
+                                story.id,
+                                story.comments_count,
+                                hasMoreItems,
+                                page,
+                            );
+                            //this._panel.show();
+                        }}>
                         <View style={styles.singlePostStat}>
-                            <LovedIcon />
+                            <LovedIcon style={{height: 30, width: 30}} />
                             <Text>{story.inspirations_count}</Text>
-                            <CommentIcon />
+                            <CommentIcon style={{height: 30, width: 30}} />
                             <Text>{story.comments_count}</Text>
                         </View>
                     </TouchableHighlight>
@@ -168,57 +175,55 @@ class Story extends Component {
                             paddingHorizontal: 15,
                             paddingBottom: 15,
                             paddingTop: 0,
+                            marginTop: 15,
                         }}>
-                        <TouchableHighlight
-                            onPress={() => {
-                                this._panel.show();
-                            }}>
-                            <FontAwesomeIcon
-                                icon={faHeart}
-                                style={{
-                                    fontSize: 28,
-                                    marginTop: 10,
-                                    marginBottom: 10,
-                                    marginRight: 10,
-                                    marginLeft: 10,
-                                }}
-                            />
-                        </TouchableHighlight>
+                        <FontAwesomeIcon
+                            icon={faHeart}
+                            style={{
+                                fontSize: 50,
+                                marginTop: 10,
+                                marginBottom: 10,
+                                marginRight: 10,
+                                marginLeft: 10,
+                            }}
+                        />
                     </View>
                 </View>
-                <SlidingUpPanel
+                {/* <SlidingUpPanel
                     allowDragging={this.state.dragPanel}
                     ref={c => (this._panel = c)}>
-                    <FlatList
-                        contentContainerStyle={{
-                            flex: 1,
-                            flexDirection: "column",
-                            height: "100%",
-                            width: "100%",
-                        }}
-                        data={comments}
-                        renderItem={({item}) => (
-                            <Comment
-                                {...this._panResponder.panHandlers}
-                                comment={item}
-                            />
-                        )}
-                        keyExtractor={item => item.id.toString()}
-                        onEndReached={() =>
-                            loadRootComments(story.id, hasMoreItems, page)
-                        }
-                        onEndReachedThreshold={0.5}
-                        initialNumToRender={10}
-                        {...this._panResponder.panHandlers}
-                    />
-                    <TextInput
-                        onKeyPress={this.handleCommentSubmission}
-                        onChangeText={value =>
-                            this.setState({newCommentContent: value})
-                        }
-                        onSubmitEditing={this.handleSubmitEditing}
-                    />
-                </SlidingUpPanel>
+                    <View
+                        style={{flex: 1, flexDirection: "column"}}
+                        {...this._panResponder.panHandlers}>
+                        <FlatList
+                            contentContainerStyle={{
+                                flex: 1,
+                                flexDirection: "column",
+                            }}
+                            data={comments}
+                            renderItem={({item}) => (
+                                <Comment
+                                    {...this._panResponder.panHandlers}
+                                    comment={item}
+                                />
+                            )}
+                            keyExtractor={item => item.id.toString()}
+                            onEndReached={() =>
+                                loadRootComments(story.id, hasMoreItems, page)
+                            }
+                            onEndReachedThreshold={0.5}
+                            initialNumToRender={10}
+                            {...this._panResponder.panHandlers}
+                        />
+                        <TextInput
+                            onKeyPress={this.handleCommentSubmission}
+                            onChangeText={value =>
+                                this.setState({newCommentContent: value})
+                            }
+                            onSubmitEditing={this.handleSubmitEditing}
+                        />
+                    </View>
+                </SlidingUpPanel> */}
             </View>
         );
     }
@@ -232,7 +237,6 @@ const styles = StyleSheet.create({
         backgroundColor: "#fff",
     },
     postCard: {
-        flex: 1,
         width: 400,
         height: 250,
     },
@@ -243,12 +247,9 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 9,
     },
     singlePostContent: {
-        paddingLeft: 15,
-        paddingRight: 15,
-        paddingTop: 15,
-        paddingBottom: 15,
+        paddingHorizontal: 15,
+        paddingVertical: 15,
         color: "#4E4B4B",
-        flex: 1,
     },
     singlePostUser: {
         flexDirection: "row",
@@ -260,13 +261,14 @@ const styles = StyleSheet.create({
     },
     singlePostStat: {
         flexDirection: "row",
-        marginLeft: 0,
-        width: "100%",
+        height: 40,
+        marginTop: 15,
+        justifyContent: "space-around",
     },
 });
 
 const mapStateToProps = state => ({
-    auth: state.auth,
+    authToken: state.auth.authToken,
     comments: state.commentList.comments,
     page: state.commentList.page,
     hasMoreItems: state.commentList.hasMoreItems,

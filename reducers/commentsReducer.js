@@ -43,5 +43,7 @@ export default function commentsReducer(state = initialState, action) {
             }
         case SET_COMMENT_COUNT:
             return {...state, commentCount: action.payload};
+        default:
+            return state;
     }
 }

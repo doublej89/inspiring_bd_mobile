@@ -52,7 +52,15 @@ export default function(state = initialState, action) {
                 };
             }
         case REFRESH_PAGE:
-            return {...state, page: 1, refreshing: true};
+            return {
+                ...state,
+                page: 1,
+                refreshing: true,
+                stories: [],
+                inspiredStoryIds: [],
+                hasMoreItems: false,
+                loading: false,
+            };
         default:
             return state;
     }

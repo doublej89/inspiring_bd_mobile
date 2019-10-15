@@ -24,12 +24,6 @@ class UserStoryList extends Component {
         const screenHeight = dimensions.height;
         return !loading ? (
             <FlatList
-                contentContainerStyle={{
-                    flex: 1,
-                    flexDirection: "column",
-                    height: "100%",
-                    width: "100%",
-                }}
                 data={stories}
                 renderItem={({item}) => <Story story={item} />}
                 keyExtractor={item => item.id.toString()}
