@@ -21,69 +21,66 @@ import {
     loadRootComments,
     submitComment,
     setCommentCount,
+    openCommentsList,
 } from "../actions/content";
 import {FontAwesomeIcon} from "@fortawesome/react-native-fontawesome";
 import {faHeart} from "@fortawesome/free-solid-svg-icons";
 
 class Story extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            newCommentContent: "",
-            dragPanel: true,
-        };
-        this._onGrant = this._onGrant.bind(this);
-        this._onRelease = this._onRelease.bind(this);
-        this.handleCommentSubmission = this.handleCommentSubmission.bind(this);
-        this.handleSubmitEditing = this.handleSubmitEditing.bind(this);
-        this._panResponder = PanResponder.create({
-            onStartShouldSetPanResponder: this._onGrant,
-            onMoveShouldSetPanResponder: this._onGrant,
-            onPanResponderRelease: this._onRelease,
-            onPanResponderTerminate: this._onRelease,
-        });
-    }
+    // constructor(props) {
+    //     super(props);
+    //     this.state = {
+    //         newCommentContent: "",
+    //         dragPanel: true,
+    //     };
+    //     this._onGrant = this._onGrant.bind(this);
+    //     this._onRelease = this._onRelease.bind(this);
+    //     this.handleCommentSubmission = this.handleCommentSubmission.bind(this);
+    //     this.handleSubmitEditing = this.handleSubmitEditing.bind(this);
+    //     this._panResponder = PanResponder.create({
+    //         onStartShouldSetPanResponder: this._onGrant,
+    //         onMoveShouldSetPanResponder: this._onGrant,
+    //         onPanResponderRelease: this._onRelease,
+    //         onPanResponderTerminate: this._onRelease,
+    //     });
+    // }
 
-    componentDidMount() {
-        const {story, setCommentCount} = this.props;
-        setCommentCount(story.comments_count);
-    }
+    // _onGrant() {
+    //     this.setState({dragPanel: false});
+    //     return true;
+    // }
 
-    _onGrant() {
-        this.setState({dragPanel: false});
-        return true;
-    }
+    // _onRelease() {
+    //     this.setState({dragPanel: true});
+    // }
 
-    _onRelease() {
-        this.setState({dragPanel: true});
-    }
+    // handleCommentSubmission(evt) {
+    //     const {submitComment, story, authToken} = this.props;
+    //     const {newCommentContent} = this.state;
+    //     if (evt.nativeEvent.key === "Enter") {
+    //         this.setState({newCommentContent: ""}, () => {
+    //             submitComment(
+    //                 newCommentContent,
+    //                 story.id,
+    //                 story.comments_count,
+    //                 authToken,
+    //             );
+    //         });
+    //     }
+    // }
 
-    handleCommentSubmission(evt) {
-        const {submitComment, story, authToken} = this.props;
-        const {newCommentContent} = this.state;
-        if (evt.nativeEvent.key === "Enter") {
-            this.setState({newCommentContent: ""}, () => {
-                submitComment(
-                    newCommentContent,
-                    story.id,
-                    story.comments_count,
-                    authToken,
-                );
-            });
-        }
-    }
-
-    handleSubmitEditing(evt) {
-        const {text} = evt.nativeEvent;
-        const {story, submitComment, authToken} = this.props;
-        this.setState({newCommentContent: ""}, () => {
-            submitComment(text, story.id, story.comments_count, authToken);
-        });
-    }
+    // handleSubmitEditing(evt) {
+    //     const {text} = evt.nativeEvent;
+    //     const {story, submitComment, authToken} = this.props;
+    //     this.setState({newCommentContent: ""}, () => {
+    //         submitComment(text, story.id, story.comments_count, authToken);
+    //     });
+    // }
 
     render() {
         let {
             story,
+            openCommentsList,
             commentCount,
             comments,
             loadRootComments,
@@ -91,7 +88,6 @@ class Story extends Component {
             hasMoreItems,
         } = this.props;
         let {user} = story;
-        story.comments_count = commentCount;
         console.log("Number of comments: " + story.comments_count);
 
         return (
@@ -149,13 +145,8 @@ class Story extends Component {
                     </Text>
                     <TouchableHighlight
                         onPress={() => {
-                            loadRootComments(
-                                story.id,
-                                story.comments_count,
-                                hasMoreItems,
-                                page,
-                            );
                             //this._panel.show();
+                            openCommentsList(story.id);
                         }}>
                         <View style={styles.singlePostStat}>
                             <LovedIcon style={{height: 30, width: 30}} />
@@ -180,11 +171,12 @@ class Story extends Component {
                         <FontAwesomeIcon
                             icon={faHeart}
                             style={{
-                                fontSize: 50,
+                                fontSize: 80,
                                 marginTop: 10,
                                 marginBottom: 10,
                                 marginRight: 10,
                                 marginLeft: 10,
+                                color: "red",
                             }}
                         />
                     </View>
@@ -267,15 +259,14 @@ const styles = StyleSheet.create({
     },
 });
 
-const mapStateToProps = state => ({
-    authToken: state.auth.authToken,
-    comments: state.commentList.comments,
-    page: state.commentList.page,
-    hasMoreItems: state.commentList.hasMoreItems,
-    commentCount: state.commentList.commentCount,
-});
+// const mapStateToProps = state => ({
+//     authToken: state.auth.authToken,
+//     comments: state.commentList.comments,
+//     commentsPage: state.commentList.commentsPage,
+//     hasMoreItems: state.commentList.hasMoreItems,
+// });
 
 export default connect(
-    mapStateToProps,
-    {loadRootComments, submitComment, setCommentCount},
+    null,
+    {loadRootComments, submitComment, setCommentCount, openCommentsList},
 )(Story);

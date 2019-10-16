@@ -3,7 +3,7 @@ import {LOAD_STORIES, REFRESH_PAGE} from "../types";
 const initialState = {
     stories: [],
     inspiredStoryIds: [],
-    page: 1,
+    storiesPage: 1,
     hasMoreItems: false,
     refreshing: false,
     loading: true,
@@ -35,7 +35,7 @@ export default function(state = initialState, action) {
                     ...state,
                     stories: [...stories],
                     inspiredStoryIds: [...inspiredStoryIds],
-                    page: metaData.next_page,
+                    storiesPage: metaData.next_page,
                     hasMoreItems: true,
                     refreshing: false,
                     loading: false,
@@ -47,14 +47,14 @@ export default function(state = initialState, action) {
                     inspiredStoryIds: [...inspiredStoryIds],
                     hasMoreItems: false,
                     refreshing: false,
-                    page: null,
+                    storiesPage: null,
                     loading: false,
                 };
             }
         case REFRESH_PAGE:
             return {
                 ...state,
-                page: 1,
+                storiesPage: 1,
                 refreshing: true,
                 stories: [],
                 inspiredStoryIds: [],

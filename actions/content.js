@@ -3,7 +3,8 @@ import {
     REFRESH_PAGE,
     LOAD_COMMENTS,
     SUBMIT_COMMENT,
-    SET_COMMENT_COUNT,
+    OPEN_COMMENTS_LIST,
+    CLOSE_COMMENTS_LIST,
 } from "../types";
 import axios from "axios";
 import {strim} from "../utils";
@@ -58,7 +59,6 @@ export const loadRootComments = (
 export const submitComment = (
     newCommentContent,
     storyId,
-    commentCount,
     authToken,
 ) => dispatch => {
     let commentContent = strim(newCommentContent);
@@ -77,16 +77,20 @@ export const submitComment = (
                 if (response.data.comment) {
                     dispatch({
                         type: SUBMIT_COMMENT,
-                        payload: {comment: response.data.comment, commentCount},
+                        payload: response.data,
                     });
                 }
             });
     }
 };
 
-export const setCommentCount = commentCount => ({
-    type: SET_COMMENT_COUNT,
-    payload: commentCount,
+export const openCommentsList = storyId => ({
+    type: OPEN_COMMENTS_LIST,
+    payload: storyId,
+});
+
+export const closeCommentList = () => ({
+    type: CLOSE_COMMENTS_LIST,
 });
 
 export const refreshPage = () => ({type: REFRESH_PAGE});

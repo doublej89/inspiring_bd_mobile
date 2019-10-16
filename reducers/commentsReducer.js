@@ -1,11 +1,15 @@
-import {LOAD_COMMENTS, SUBMIT_COMMENT, SET_COMMENT_COUNT} from "../types";
+import {
+    LOAD_COMMENTS,
+    SUBMIT_COMMENT,
+    OPEN_COMMENTS_LIST,
+    CLOSE_COMMENTS_LIST,
+} from "../types";
 
 const initialState = {
     comments: [],
-    page: 1,
-    newCommentContent: "",
+    commentsPage: 1,
     hasMoreItems: true,
-    commentCount: 0,
+    selectedStoryId: null,
 };
 
 export default function commentsReducer(state = initialState, action) {
@@ -24,25 +28,32 @@ export default function commentsReducer(state = initialState, action) {
                 return {
                     ...state,
                     comments: comments,
-                    page: data.meta.next_page,
+                    commentsPage: data.meta.next_page,
                 };
             }
             return {
                 ...state,
                 comments: comments,
-                page: null,
+                commentsPage: null,
                 hasMoreItems: false,
             };
         case SUBMIT_COMMENT:
-            let {comment, commentCount} = action.payload;
+            let {comment} = action.payload;
             if (comment) {
                 const {comments} = state;
                 comments.unshift(comment);
-                commentCount += 1;
-                return {...state, comments: comments, commentCount};
+                return {...state, comments: comments};
             }
-        case SET_COMMENT_COUNT:
-            return {...state, commentCount: action.payload};
+        case OPEN_COMMENTS_LIST:
+            return {...state, selectedStoryId: action.payload};
+        case CLOSE_COMMENTS_LIST:
+            return {
+                ...state,
+                selectedStoryId: null,
+                comments: [],
+                commentsPage: 1,
+                hasMoreItems: true,
+            };
         default:
             return state;
     }
