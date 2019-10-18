@@ -146,7 +146,10 @@ class Story extends Component {
                     <TouchableHighlight
                         onPress={() => {
                             //this._panel.show();
-                            openCommentsList(story.id);
+                            this.props.navigation.navigate("CommentsList", {
+                                storyId: story.id,
+                                commentsCount: story.comments_count,
+                            });
                         }}>
                         <View style={styles.singlePostStat}>
                             <LovedIcon style={{height: 30, width: 30}} />

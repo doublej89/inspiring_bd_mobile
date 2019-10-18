@@ -5,6 +5,7 @@ import {
     SUBMIT_COMMENT,
     OPEN_COMMENTS_LIST,
     CLOSE_COMMENTS_LIST,
+    UPDATE_COMMENT_COUNT,
 } from "../types";
 import axios from "axios";
 import {strim} from "../utils";
@@ -91,6 +92,11 @@ export const openCommentsList = storyId => ({
 
 export const closeCommentList = () => ({
     type: CLOSE_COMMENTS_LIST,
+});
+
+export const updateCommentCount = (storyId, commentCount) => ({
+    type: UPDATE_COMMENT_COUNT,
+    payload: {storyId, commentCount},
 });
 
 export const refreshPage = () => ({type: REFRESH_PAGE});

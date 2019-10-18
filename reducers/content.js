@@ -1,4 +1,4 @@
-import {LOAD_STORIES, REFRESH_PAGE} from "../types";
+import {LOAD_STORIES, REFRESH_PAGE, UPDATE_COMMENT_COUNT} from "../types";
 
 const initialState = {
     stories: [],
@@ -19,7 +19,7 @@ export default function(state = initialState, action) {
             if (metaData && metaData.inspired_story_ids) {
                 inspiredStoryIds.push(...metaData.inspired_story_ids);
             }
-            let stories = state.stories;
+            let {stories} = state;
             data.stories.map(story => {
                 if (
                     inspiredStoryIds &&
@@ -51,6 +51,12 @@ export default function(state = initialState, action) {
                     loading: false,
                 };
             }
+        case UPDATE_COMMENT_COUNT:
+            let {storyId, commentCount} = action.payload;
+            let {stories} = state;
+            let updatedStory = stories.find(story => story.id === storyId);
+            updatedStory.comments_count = commentCount;
+            return {...state, stories: [...stories]};
         case REFRESH_PAGE:
             return {
                 ...state,

@@ -1,15 +1,9 @@
-import {
-    LOAD_COMMENTS,
-    SUBMIT_COMMENT,
-    OPEN_COMMENTS_LIST,
-    CLOSE_COMMENTS_LIST,
-} from "../types";
+import {LOAD_COMMENTS, SUBMIT_COMMENT, CLOSE_COMMENTS_LIST} from "../types";
 
 const initialState = {
     comments: [],
     commentsPage: 1,
     hasMoreItems: true,
-    selectedStoryId: null,
 };
 
 export default function commentsReducer(state = initialState, action) {
@@ -44,12 +38,10 @@ export default function commentsReducer(state = initialState, action) {
                 comments.unshift(comment);
                 return {...state, comments: comments};
             }
-        case OPEN_COMMENTS_LIST:
-            return {...state, selectedStoryId: action.payload};
+            break;
         case CLOSE_COMMENTS_LIST:
             return {
                 ...state,
-                selectedStoryId: null,
                 comments: [],
                 commentsPage: 1,
                 hasMoreItems: true,
