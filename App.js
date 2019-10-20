@@ -7,7 +7,7 @@
  */
 
 import React, {Component} from "react";
-import {Easing} from "react-native";
+import {Easing, Animated} from "react-native";
 import {createAppContainer, createSwitchNavigator} from "react-navigation";
 import {createStackNavigator} from "react-navigation-stack";
 import HomeScreen from "./components/UserStoryList";
@@ -25,7 +25,6 @@ const store = createStore(reducers, applyMiddleware(thunk));
 
 const MainStack = createStackNavigator({
     Home: HomeScreen,
-    Comments: CommentScreen,
     Profile: ProfileScreen,
 });
 

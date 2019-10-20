@@ -31,6 +31,7 @@ export const loadItems = page => dispatch => {
 
 export const loadRootComments = (
     storyId,
+    authToken,
     commentsCount,
     hasMoreItems,
     page,
@@ -46,6 +47,9 @@ export const loadRootComments = (
                         per_page: 10,
                         current_user_meta: true,
                         page: page,
+                    },
+                    headers: {
+                        Authorization: authToken,
                     },
                 },
             )
@@ -64,6 +68,7 @@ export const submitComment = (
 ) => dispatch => {
     let commentContent = strim(newCommentContent);
     if (commentContent.length > 0) {
+        console.log("Sending comment: " + commentContent);
         axios
             .post(
                 `https://dev.inspiringbangladesh.com/api/v1/stories/${storyId}/comments`,
@@ -80,7 +85,14 @@ export const submitComment = (
                         type: SUBMIT_COMMENT,
                         payload: response.data,
                     });
+                    dispatch(
+                        updateCommentCount(response.data.comment.story_id),
+                    );
                 }
+            })
+            .catch(err => {
+                console.log("Comment submission error");
+                console.log(err);
             });
     }
 };
@@ -94,9 +106,9 @@ export const closeCommentList = () => ({
     type: CLOSE_COMMENTS_LIST,
 });
 
-export const updateCommentCount = (storyId, commentCount) => ({
+export const updateCommentCount = storyId => ({
     type: UPDATE_COMMENT_COUNT,
-    payload: {storyId, commentCount},
+    payload: storyId,
 });
 
 export const refreshPage = () => ({type: REFRESH_PAGE});

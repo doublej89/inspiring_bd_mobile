@@ -8,7 +8,7 @@ const initialState = {
 
 export default function commentsReducer(state = initialState, action) {
     switch (action.type) {
-        case LOAD_COMMENTS:
+        case LOAD_COMMENTS: {
             let data = action.payload;
             let {comments} = state;
             if (data.comments.length > 0) {
@@ -31,22 +31,26 @@ export default function commentsReducer(state = initialState, action) {
                 commentsPage: null,
                 hasMoreItems: false,
             };
-        case SUBMIT_COMMENT:
+        }
+        case SUBMIT_COMMENT: {
             let {comment} = action.payload;
             if (comment) {
                 const {comments} = state;
                 comments.unshift(comment);
-                return {...state, comments: comments};
+                return {...state, comments: [...comments]};
             }
             break;
-        case CLOSE_COMMENTS_LIST:
+        }
+        case CLOSE_COMMENTS_LIST: {
             return {
                 ...state,
                 comments: [],
                 commentsPage: 1,
                 hasMoreItems: true,
             };
-        default:
+        }
+        default: {
             return state;
+        }
     }
 }

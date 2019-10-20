@@ -11,15 +11,14 @@ const initialState = {
 
 export default function(state = initialState, action) {
     switch (action.type) {
-        case LOAD_STORIES:
+        case LOAD_STORIES: {
             let data = action.payload;
             let metaData = data.meta;
-            let inspiredStoryIds = state.inspiredStoryIds;
+            let {stories, inspiredStoryIds} = state;
 
             if (metaData && metaData.inspired_story_ids) {
                 inspiredStoryIds.push(...metaData.inspired_story_ids);
             }
-            let {stories} = state;
             data.stories.map(story => {
                 if (
                     inspiredStoryIds &&
@@ -51,13 +50,15 @@ export default function(state = initialState, action) {
                     loading: false,
                 };
             }
-        case UPDATE_COMMENT_COUNT:
-            let {storyId, commentCount} = action.payload;
+        }
+        case UPDATE_COMMENT_COUNT: {
+            let storyId = action.payload;
             let {stories} = state;
             let updatedStory = stories.find(story => story.id === storyId);
-            updatedStory.comments_count = commentCount;
+            updatedStory.comments_count += 1;
             return {...state, stories: [...stories]};
-        case REFRESH_PAGE:
+        }
+        case REFRESH_PAGE: {
             return {
                 ...state,
                 storiesPage: 1,
@@ -67,7 +68,9 @@ export default function(state = initialState, action) {
                 hasMoreItems: false,
                 loading: false,
             };
-        default:
+        }
+        default: {
             return state;
+        }
     }
 }

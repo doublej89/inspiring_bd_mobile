@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {View, FlatList, TextInput, Button} from "react-native";
+import {View, FlatList, TextInput, Button, StyleSheet} from "react-native";
 import {connect} from "react-redux";
 import {
     loadRootComments,
@@ -23,24 +23,30 @@ class CommentList extends Component {
             hasMoreItems,
             navigation,
             loadRootComments,
+            authToken,
         } = this.props;
         let storyId = JSON.stringify(navigation.getParam("storyId", "NO-ID"));
         let commentCount = JSON.stringify(
             navigation.getParam("commentsCount", "0"),
         );
         this.setState({storyId, commentCount});
-        loadRootComments(storyId, commentCount, hasMoreItems, commentsPage);
+        loadRootComments(
+            storyId,
+            authToken,
+            commentCount,
+            hasMoreItems,
+            commentsPage,
+        );
     }
 
     componentDidUpdate(prevProps) {
-        let {storyId, commentCount} = this.state;
+        let {commentCount} = this.state;
         let currCommentsLength = this.props.comments.length;
         let prevCommentsLength = prevProps.comments.length;
         if (currCommentsLength > prevCommentsLength) {
             let diff = currCommentsLength - prevCommentsLength;
             commentCount += diff;
             this.setState({commentCount});
-            updateCommentCount(storyId, commentCount);
         }
     }
 
@@ -50,16 +56,12 @@ class CommentList extends Component {
 
     handleCommentSubmission(evt) {
         const {submitComment, authToken} = this.props;
-        const {newCommentContent, storyId, commentCount} = this.state;
+        const {newCommentContent, storyId} = this.state;
 
         if (evt.nativeEvent.key === "Enter") {
             this.setState({newCommentContent: ""}, () => {
-                submitComment(
-                    newCommentContent,
-                    storyId,
-                    commentCount,
-                    authToken,
-                );
+                console.log("On key press: " + newCommentContent);
+                submitComment(newCommentContent, storyId, authToken);
             });
         }
     }
@@ -67,44 +69,80 @@ class CommentList extends Component {
     handleSubmitEditing(evt) {
         const {text} = evt.nativeEvent;
         const {submitComment, authToken} = this.props;
-        const {storyId, commentCount} = this.state;
+        const {storyId} = this.state;
         this.setState({newCommentContent: ""}, () => {
-            submitComment(text, storyId, commentCount, authToken);
+            console.log("Submit editing: " + text);
+            submitComment(text, storyId, authToken);
         });
     }
 
     render() {
-        const {loadRootComments, commentsPage, hasMoreItems} = this.props;
+        const {
+            loadRootComments,
+            commentsPage,
+            hasMoreItems,
+            comments,
+            authToken,
+        } = this.props;
+        const {commentCount, storyId, newCommentContent} = this.state;
         return (
-            <View style={{flexDirection: "column"}}>
-                <Button onPress={() => this.props.navigation.goBack()} />
-                <FlatList
-                    data={comments}
-                    renderItem={({item}) => (
-                        <Comment
-                            // {...this._panResponder.panHandlers}
-                            comment={item}
-                        />
-                    )}
-                    keyExtractor={item => item.id.toString()}
-                    onEndReached={() =>
-                        loadRootComments(story.id, hasMoreItems, commentsPage)
-                    }
-                    onEndReachedThreshold={0.5}
-                    initialNumToRender={10}
-                    // {...this._panResponder.panHandlers}
-                />
+            <View style={{flexDirection: "column", flex: 1}}>
+                <View style={{flex: 0.9}}>
+                    <Button
+                        title="Close"
+                        onPress={() => this.props.navigation.goBack()}
+                    />
+                    <FlatList
+                        data={comments}
+                        renderItem={({item}) => (
+                            <Comment
+                                // {...this._panResponder.panHandlers}
+                                comment={item}
+                            />
+                        )}
+                        keyExtractor={item => item.id.toString()}
+                        onEndReached={() =>
+                            loadRootComments(
+                                storyId,
+                                authToken,
+                                commentCount,
+                                hasMoreItems,
+                                commentsPage,
+                            )
+                        }
+                        onEndReachedThreshold={0.5}
+                        initialNumToRender={10}
+                        extraData={this.props}
+                        // {...this._panResponder.panHandlers}
+                    />
+                </View>
                 <TextInput
+                    placeholder="Write comment..."
                     onKeyPress={this.handleCommentSubmission}
                     onChangeText={value =>
                         this.setState({newCommentContent: value})
                     }
                     onSubmitEditing={this.handleSubmitEditing}
+                    style={styles.textInputStyle}
+                    value={newCommentContent}
                 />
             </View>
         );
     }
 }
+
+const styles = StyleSheet.create({
+    textInputStyle: {
+        textAlign: "center",
+        height: 40,
+        width: "90%",
+        borderWidth: 1,
+        borderColor: "#4CAF50",
+        borderRadius: 7,
+        marginTop: 12,
+        flex: 0.1,
+    },
+});
 
 const mapStateToProps = state => ({
     authToken: state.auth.authToken,

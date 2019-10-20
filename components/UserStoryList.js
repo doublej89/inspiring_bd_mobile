@@ -1,24 +1,10 @@
 import React, {Component} from "react";
 import {connect} from "react-redux";
-import {
-    View,
-    FlatList,
-    ActivityIndicator,
-    Dimensions,
-    PanResponder,
-    Animated,
-    TextInput,
-} from "react-native";
+import {View, FlatList, ActivityIndicator} from "react-native";
 import Story from "./Story";
 import StoryForm from "./StoryForm";
 import Comment from "./Comment";
-import {
-    loadItems,
-    refreshPage,
-    loadRootComments,
-    submitComment,
-    closeCommentList,
-} from "../actions/content";
+import {loadItems, refreshPage} from "../actions/content";
 import SlidingUpPanel from "rn-sliding-up-panel";
 
 class UserStoryList extends Component {
@@ -136,23 +122,16 @@ class UserStoryList extends Component {
             loadItems,
             refreshing,
             loading,
-            closeCommentList,
+            navigation,
         } = this.props;
-        const dimensions = Dimensions.get("window");
-        const screenWidth = dimensions.width;
-        const screenHeight = dimensions.height;
-        const animatedValue = new Animated.Value(0);
-        animatedValue.addListener(({value}) => {
-            console.log(value);
-            if (value === 0) {
-                closeCommentList();
-            }
-        });
+
         return !loading ? (
             <View>
                 <FlatList
                     data={stories}
-                    renderItem={({item}) => <Story story={item} />}
+                    renderItem={({item}) => (
+                        <Story story={item} navigation={navigation} />
+                    )}
                     keyExtractor={item => item.id.toString()}
                     onEndReached={() => loadItems(storiesPage)}
                     onEndReachedThreshold={0.5}
@@ -213,5 +192,5 @@ const mapStateToProps = state => ({
 
 export default connect(
     mapStateToProps,
-    {loadItems, refreshPage, loadRootComments, submitComment, closeCommentList},
+    {loadItems, refreshPage},
 )(UserStoryList);

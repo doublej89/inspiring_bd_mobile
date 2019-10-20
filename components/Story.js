@@ -17,12 +17,6 @@ import CommentIcon from "../assets/icons/comment.svg";
 import FollowIcon from "../assets/icons/follow.svg";
 import SlidingUpPanel from "rn-sliding-up-panel";
 import Comment from "./Comment";
-import {
-    loadRootComments,
-    submitComment,
-    setCommentCount,
-    openCommentsList,
-} from "../actions/content";
 import {FontAwesomeIcon} from "@fortawesome/react-native-fontawesome";
 import {faHeart} from "@fortawesome/free-solid-svg-icons";
 
@@ -78,17 +72,9 @@ class Story extends Component {
     // }
 
     render() {
-        let {
-            story,
-            openCommentsList,
-            commentCount,
-            comments,
-            loadRootComments,
-            page,
-            hasMoreItems,
-        } = this.props;
+        console.log(this.props);
+        let {story, navigation} = this.props;
         let {user} = story;
-        console.log("Number of comments: " + story.comments_count);
 
         return (
             <View style={styles.postContainer}>
@@ -146,7 +132,7 @@ class Story extends Component {
                     <TouchableHighlight
                         onPress={() => {
                             //this._panel.show();
-                            this.props.navigation.navigate("CommentsList", {
+                            navigation.navigate("CommentsList", {
                                 storyId: story.id,
                                 commentsCount: story.comments_count,
                             });
@@ -269,7 +255,4 @@ const styles = StyleSheet.create({
 //     hasMoreItems: state.commentList.hasMoreItems,
 // });
 
-export default connect(
-    null,
-    {loadRootComments, submitComment, setCommentCount, openCommentsList},
-)(Story);
+export default connect()(Story);
