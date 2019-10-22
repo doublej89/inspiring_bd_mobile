@@ -98,6 +98,7 @@ class CommentList extends Component {
                             <Comment
                                 // {...this._panResponder.panHandlers}
                                 comment={item}
+                                navigation={this.props.navigation}
                             />
                         )}
                         keyExtractor={item => item.id.toString()}

@@ -6,6 +6,10 @@ import {
     OPEN_COMMENTS_LIST,
     CLOSE_COMMENTS_LIST,
     UPDATE_COMMENT_COUNT,
+    LOAD_COMMENT_REPLIES,
+    UPDATE_REPLY_COUNT,
+    SUBMIT_REPLY,
+    CLOSE_REPLIES_LIST,
 } from "../types";
 import axios from "axios";
 import {strim} from "../utils";
@@ -97,6 +101,41 @@ export const submitComment = (
     }
 };
 
+export const submitReply = (
+    newReplyContent,
+    storyId,
+    commentId,
+    authToken,
+) => dispatch => {
+    let replyContent = strim(newReplyContent);
+    if (replyContent.length > 0) {
+        console.log("Sending replyt: " + replyContent);
+        axios
+            .post(
+                `https://dev.inspiringbangladesh.com/api/v1/stories/${storyId}/comments`,
+                {comment: {body: replyContent, parent_id: commentId}},
+                {
+                    headers: {
+                        Authorization: authToken,
+                    },
+                },
+            )
+            .then(response => {
+                if (response.data.comment) {
+                    dispatch({
+                        type: SUBMIT_REPLY,
+                        payload: response.data,
+                    });
+                    dispatch(updateReplyCount(commentId));
+                }
+            })
+            .catch(err => {
+                console.log("Comment reply submission error");
+                console.log(err);
+            });
+    }
+};
+
 export const openCommentsList = storyId => ({
     type: OPEN_COMMENTS_LIST,
     payload: storyId,
@@ -109,6 +148,46 @@ export const closeCommentList = () => ({
 export const updateCommentCount = storyId => ({
     type: UPDATE_COMMENT_COUNT,
     payload: storyId,
+});
+
+export const updateReplyCount = commentId => ({
+    type: UPDATE_REPLY_COUNT,
+    payload: commentId,
+});
+
+export const loadReplies = (
+    storyId,
+    commentId,
+    authToken,
+    repliesCount,
+) => dispatch => {
+    if (repliesCount > 0) {
+        axios
+            .get(
+                `https://dev.inspiringbangladesh.com/api/v1/stories/${storyId}/comments`,
+                {
+                    params: {
+                        parent_id: commentId,
+                        skip_paginate: true,
+                    },
+                    headers: {
+                        Authorization: authToken,
+                    },
+                },
+            )
+            .then(response => {
+                if (response.data.comments) {
+                    dispatch({
+                        type: LOAD_COMMENT_REPLIES,
+                        payload: response.data,
+                    });
+                }
+            });
+    }
+};
+
+export const closeRepliesList = () => ({
+    type: CLOSE_REPLIES_LIST,
 });
 
 export const refreshPage = () => ({type: REFRESH_PAGE});

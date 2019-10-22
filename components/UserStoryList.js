@@ -138,6 +138,7 @@ class UserStoryList extends Component {
                     initialNumToRender={10}
                     onRefresh={this._handleRefresh}
                     refreshing={refreshing}
+                    extraData={this.props}
                 />
                 {/* <SlidingUpPanel
                     allowDragging={this.state.dragPanel}

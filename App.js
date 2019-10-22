@@ -15,6 +15,7 @@ import RegisterScreen from "./components/Register";
 import LoginScreen from "./components/Login";
 import ProfileScreen from "./components/Profile";
 import CommentScreen from "./components/CommentList";
+import RepliesScreen from "./components/RepliesList";
 import AuthLoadingScreen from "./AuthLoadingScreen";
 import {createStore, applyMiddleware} from "redux";
 import {Provider} from "react-redux";
@@ -28,10 +29,18 @@ const MainStack = createStackNavigator({
     Profile: ProfileScreen,
 });
 
+const CommentsStack = createStackNavigator(
+    {
+        CommentsList: {screen: CommentScreen},
+        RepliesList: {screen: RepliesScreen},
+    },
+    {initialRouteName: "CommentsList"},
+);
+
 const AppStack = createStackNavigator(
     {
         Main: {screen: MainStack},
-        CommentsList: {screen: CommentScreen},
+        Comments: {screen: CommentsStack},
     },
     {
         mode: "modal",
