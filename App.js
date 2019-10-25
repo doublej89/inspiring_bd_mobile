@@ -10,6 +10,7 @@ import React, {Component} from "react";
 import {Easing, Animated} from "react-native";
 import {createAppContainer, createSwitchNavigator} from "react-navigation";
 import {createStackNavigator} from "react-navigation-stack";
+import {createDismissableStackNavigator} from "./createDismissableStackNavigator";
 import HomeScreen from "./components/UserStoryList";
 import RegisterScreen from "./components/Register";
 import LoginScreen from "./components/Login";
@@ -24,12 +25,26 @@ import reducers from "./reducers";
 
 const store = createStore(reducers, applyMiddleware(thunk));
 
-const MainStack = createStackNavigator({
-    Home: HomeScreen,
-    Profile: ProfileScreen,
-});
+const MainStack = createStackNavigator(
+    {
+        Home: HomeScreen,
+        Profile: ProfileScreen,
+    },
+    {
+        defaultNavigationOptions: {
+            headerTintColor: "#fff",
+            headerStyle: {
+                backgroundColor: "#f4511e",
+                color: "#fff",
+            },
+            headerTitleStyle: {
+                fontWeight: "bold",
+            },
+        },
+    },
+);
 
-const CommentsStack = createStackNavigator(
+const CommentsStack = createDismissableStackNavigator(
     {
         CommentsList: {screen: CommentScreen},
         RepliesList: {screen: RepliesScreen},

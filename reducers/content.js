@@ -54,9 +54,13 @@ export default function(state = initialState, action) {
         case UPDATE_COMMENT_COUNT: {
             let storyId = action.payload;
             let {stories} = state;
-            let updatedStory = stories.find(story => story.id === storyId);
-            updatedStory.comments_count += 1;
-            return {...state, stories: [...stories]};
+            const updatedStories = stories.map(story => {
+                if (story.id === storyId) {
+                    return {...story, comments_count: story.comments_count + 1};
+                }
+                return story;
+            });
+            return {...state, stories: updatedStories};
         }
         case REFRESH_PAGE: {
             return {

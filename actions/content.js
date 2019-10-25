@@ -10,6 +10,7 @@ import {
     UPDATE_REPLY_COUNT,
     SUBMIT_REPLY,
     CLOSE_REPLIES_LIST,
+    CLOSE_COMMENTS_MODAL,
 } from "../types";
 import axios from "axios";
 import {strim} from "../utils";
@@ -26,7 +27,6 @@ export const loadItems = page => dispatch => {
         })
         .then(respJson => {
             if (respJson.data.stories) {
-                console.log(respJson.data);
                 dispatch({type: LOAD_STORIES, payload: respJson.data});
             }
         })
@@ -61,6 +61,10 @@ export const loadRootComments = (
                 if (response.data.comments) {
                     dispatch({type: LOAD_COMMENTS, payload: response.data});
                 }
+            })
+            .catch(err => {
+                console.log("Comments loading error");
+                console.log(err);
             });
     }
 };
@@ -72,7 +76,6 @@ export const submitComment = (
 ) => dispatch => {
     let commentContent = strim(newCommentContent);
     if (commentContent.length > 0) {
-        console.log("Sending comment: " + commentContent);
         axios
             .post(
                 `https://dev.inspiringbangladesh.com/api/v1/stories/${storyId}/comments`,
@@ -109,7 +112,6 @@ export const submitReply = (
 ) => dispatch => {
     let replyContent = strim(newReplyContent);
     if (replyContent.length > 0) {
-        console.log("Sending replyt: " + replyContent);
         axios
             .post(
                 `https://dev.inspiringbangladesh.com/api/v1/stories/${storyId}/comments`,
@@ -127,6 +129,9 @@ export const submitReply = (
                         payload: response.data,
                     });
                     dispatch(updateReplyCount(commentId));
+                    dispatch(
+                        updateCommentCount(response.data.comment.story_id),
+                    );
                 }
             })
             .catch(err => {
@@ -188,6 +193,10 @@ export const loadReplies = (
 
 export const closeRepliesList = () => ({
     type: CLOSE_REPLIES_LIST,
+});
+
+export const closeCommentsModal = () => ({
+    type: CLOSE_COMMENTS_MODAL,
 });
 
 export const refreshPage = () => ({type: REFRESH_PAGE});

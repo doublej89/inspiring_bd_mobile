@@ -10,5 +10,6 @@ export const SUBMIT_REPLY = "submit_reply";
 export const OPEN_COMMENTS_LIST = "open_commnents_list";
 export const CLOSE_COMMENTS_LIST = "close_commnents_list";
 export const CLOSE_REPLIES_LIST = "close_replies_list";
+export const CLOSE_COMMENTS_MODAL = "close_comments_modal";
 export const UPDATE_COMMENT_COUNT = "update_comment_count";
 export const UPDATE_REPLY_COUNT = "update_reply_count";

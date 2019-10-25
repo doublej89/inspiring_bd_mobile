@@ -6,6 +6,7 @@ import {
     UPDATE_REPLY_COUNT,
     SUBMIT_REPLY,
     CLOSE_REPLIES_LIST,
+    CLOSE_COMMENTS_MODAL,
 } from "../types";
 
 const initialState = {
@@ -77,14 +78,29 @@ export default function commentsReducer(state = initialState, action) {
             return {...state, replies: [...replies]};
         }
         case UPDATE_REPLY_COUNT: {
-            const {commentId} = action.payload;
+            const commentId = action.payload;
             const {comments} = state;
-            const commentToUpdate = comments.find(e => e.id === commentId);
-            commentToUpdate.replies_count += 1;
-            return {...state, comments: [...comments]};
+            const updatedComments = comments.map(comment => {
+                if (comment.id === commentId) {
+                    return {
+                        ...comment,
+                        replies_count: comment.replies_count + 1,
+                    };
+                }
+                return comment;
+            });
+            return {...state, comments: updatedComments};
         }
         case CLOSE_REPLIES_LIST: {
             return {...state, replies: []};
+        }
+        case CLOSE_COMMENTS_MODAL: {
+            return {
+                comments: [],
+                commentsPage: 1,
+                hasMoreItems: true,
+                replies: [],
+            };
         }
         default: {
             return state;

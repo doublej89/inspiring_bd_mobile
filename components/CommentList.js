@@ -8,8 +8,17 @@ import {
     closeCommentList,
 } from "../actions/content";
 import Comment from "./Comment";
+import ModalCloseButton from "./ModalCloseButton";
 
 class CommentList extends Component {
+    static navigationOptions = props => {
+        return {
+            headerRight: (
+                <ModalCloseButton dismiss={props.screenProps.dismiss} />
+            ),
+        };
+    };
+
     constructor(props) {
         super(props);
         this.state = {newCommentContent: "", storyId: null, commentCount: 0};
@@ -25,8 +34,8 @@ class CommentList extends Component {
             loadRootComments,
             authToken,
         } = this.props;
-        let storyId = JSON.stringify(navigation.getParam("storyId", "NO-ID"));
-        let commentCount = JSON.stringify(
+        let storyId = +JSON.stringify(navigation.getParam("storyId", "NO-ID"));
+        let commentCount = +JSON.stringify(
             navigation.getParam("commentsCount", "0"),
         );
         this.setState({storyId, commentCount});
@@ -50,9 +59,9 @@ class CommentList extends Component {
         }
     }
 
-    componentWillUnmount() {
-        this.props.closeCommentList();
-    }
+    // componentWillUnmount() {
+    //     this.props.closeCommentList();
+    // }
 
     handleCommentSubmission(evt) {
         const {submitComment, authToken} = this.props;
@@ -71,7 +80,6 @@ class CommentList extends Component {
         const {submitComment, authToken} = this.props;
         const {storyId} = this.state;
         this.setState({newCommentContent: ""}, () => {
-            console.log("Submit editing: " + text);
             submitComment(text, storyId, authToken);
         });
     }
@@ -85,13 +93,14 @@ class CommentList extends Component {
             authToken,
         } = this.props;
         const {commentCount, storyId, newCommentContent} = this.state;
+        console.log(comments);
         return (
-            <View style={{flexDirection: "column", flex: 1}}>
+            <View style={{flexDirection: "column", flex: 1, padding: 20}}>
                 <View style={{flex: 0.9}}>
-                    <Button
+                    {/* <Button
                         title="Close"
-                        onPress={() => this.props.navigation.goBack()}
-                    />
+                        onPress={() => this.props.screenProps.dismiss()}
+                    /> */}
                     <FlatList
                         data={comments}
                         renderItem={({item}) => (
@@ -134,12 +143,12 @@ class CommentList extends Component {
 
 const styles = StyleSheet.create({
     textInputStyle: {
-        textAlign: "center",
+        alignSelf: "center",
         height: 40,
         width: "90%",
         borderWidth: 1,
         borderColor: "#4CAF50",
-        borderRadius: 7,
+        borderRadius: 20,
         marginTop: 12,
         flex: 0.1,
     },

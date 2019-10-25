@@ -8,8 +8,17 @@ import {
     closeRepliesList,
 } from "../actions/content";
 import Comment from "./Comment";
+import ModalCloseButton from "./ModalCloseButton";
 
 class CommentList extends Component {
+    static navigationOptions = props => {
+        return {
+            headerRight: (
+                <ModalCloseButton dismiss={props.screenProps.dismiss} />
+            ),
+        };
+    };
+
     constructor(props) {
         super(props);
         this.state = {
@@ -25,10 +34,10 @@ class CommentList extends Component {
     componentDidMount() {
         const {navigation, loadReplies, authToken} = this.props;
         let storyId = JSON.stringify(navigation.getParam("storyId", "NO-ID"));
-        let commentId = JSON.stringify(
+        let commentId = +JSON.stringify(
             navigation.getParam("commentId", "NO-ID"),
         );
-        let repliesCount = JSON.stringify(
+        let repliesCount = +JSON.stringify(
             navigation.getParam("repliesCount", "0"),
         );
         this.setState({storyId, commentId, repliesCount});
@@ -46,9 +55,9 @@ class CommentList extends Component {
         }
     }
 
-    componentWillUnmount() {
-        this.props.closeRepliesList();
-    }
+    // componentWillUnmount() {
+    //     this.props.closeRepliesList();
+    // }
 
     handleCommentSubmission(evt) {
         const {submitReply, authToken} = this.props;
@@ -78,13 +87,16 @@ class CommentList extends Component {
         return (
             <View style={{flexDirection: "column", flex: 1}}>
                 <View style={{flex: 0.9}}>
-                    <View style={{flexDirection: "row"}}>
-                        <Button title="Go back" />
+                    {/* <View style={{flexDirection: "row"}}>
                         <Button
-                            title="Close"
+                            title="Go back"
                             onPress={() => this.props.navigation.goBack()}
                         />
-                    </View>
+                        <Button
+                            title="Close"
+                            onPress={() => this.props.screenProps.dismiss()}
+                        />
+                    </View> */}
                     <FlatList
                         data={replies}
                         renderItem={({item}) => (
@@ -119,7 +131,7 @@ const styles = StyleSheet.create({
         width: "90%",
         borderWidth: 1,
         borderColor: "#4CAF50",
-        borderRadius: 7,
+        borderRadius: 20,
         marginTop: 12,
         flex: 0.1,
         alignSelf: "center",

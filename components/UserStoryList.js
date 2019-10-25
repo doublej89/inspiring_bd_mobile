@@ -1,13 +1,21 @@
 import React, {Component} from "react";
 import {connect} from "react-redux";
-import {View, FlatList, ActivityIndicator} from "react-native";
+import {View, FlatList, ActivityIndicator, Button} from "react-native";
 import Story from "./Story";
 import StoryForm from "./StoryForm";
 import Comment from "./Comment";
+import LogoutButton from "./LogoutButton";
 import {loadItems, refreshPage} from "../actions/content";
-import SlidingUpPanel from "rn-sliding-up-panel";
+import {logout} from "../actions/auth";
+import LogoTitle from "./LogoTitle";
 
 class UserStoryList extends Component {
+    static navigationOptions = ({navigation}) => {
+        return {
+            headerTitle: () => <LogoTitle />,
+            headerRight: <LogoutButton navigation={navigation} />,
+        };
+    };
     // constructor(props) {
     //     super(props);
     //     this.state = {
@@ -28,6 +36,7 @@ class UserStoryList extends Component {
     // }
 
     componentDidMount() {
+        this.props.navigation.setParams({logout: this.props.logout});
         const {storiesPage} = this.props;
         this.props.loadItems(storiesPage);
     }
@@ -193,5 +202,5 @@ const mapStateToProps = state => ({
 
 export default connect(
     mapStateToProps,
-    {loadItems, refreshPage},
+    {loadItems, refreshPage, logout},
 )(UserStoryList);

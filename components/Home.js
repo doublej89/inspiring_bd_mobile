@@ -3,8 +3,13 @@ import {Text, View, Button} from "react-native";
 import {connect} from "react-redux";
 import {logout} from "../actions/auth";
 import UserStoryList from "./UserStoryList";
+import LogoTitle from "./LogoTitle";
 
 class Home extends Component {
+    componentDidMount() {
+        this.props.navigation.setParams({logout: this.props.logout});
+    }
+
     render() {
         return (
             <View
@@ -14,10 +19,10 @@ class Home extends Component {
             //     alignItems: "center",
             // }}
             >
-                <Button
+                {/* <Button
                     title="Logout"
                     onPress={() => this.props.logout(this.props.navigation)}
-                />
+                /> */}
                 <UserStoryList />
             </View>
         );

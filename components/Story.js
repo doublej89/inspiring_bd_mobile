@@ -9,14 +9,11 @@ import {
     TextInput,
     PanResponder,
 } from "react-native";
-import {connect} from "react-redux";
 import TimeAgo from "react-native-timeago";
 import {cleanHtml} from "../utils";
 import LovedIcon from "../assets/icons/loved.svg";
 import CommentIcon from "../assets/icons/comment.svg";
 import FollowIcon from "../assets/icons/follow.svg";
-import SlidingUpPanel from "rn-sliding-up-panel";
-import Comment from "./Comment";
 import {FontAwesomeIcon} from "@fortawesome/react-native-fontawesome";
 import {faHeart} from "@fortawesome/free-solid-svg-icons";
 
@@ -72,7 +69,6 @@ class Story extends Component {
     // }
 
     render() {
-        console.log(this.props);
         let {story, navigation} = this.props;
         let {user} = story;
 
@@ -255,4 +251,4 @@ const styles = StyleSheet.create({
 //     hasMoreItems: state.commentList.hasMoreItems,
 // });
 
-export default connect()(Story);
+export default Story;
