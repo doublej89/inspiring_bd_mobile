@@ -11,6 +11,9 @@ import {
     SUBMIT_REPLY,
     CLOSE_REPLIES_LIST,
     CLOSE_COMMENTS_MODAL,
+    INSPIRE_STORY,
+    UPLOAD_PROGRESS,
+    SUBMIT_STORY,
 } from "../types";
 import axios from "axios";
 import {strim} from "../utils";
@@ -31,6 +34,72 @@ export const loadItems = page => dispatch => {
             }
         })
         .catch(err => console.log(err));
+};
+
+export const submitStory = (description, file, authToken) => dispatch => {
+    const storyContent = strim(description);
+    let formData = new FormData();
+    formData.append("story[description]", storyContent);
+    formData.append("story[photos][]", file, file.name);
+    if (storyContent.length > 0) {
+        axios
+            .post(
+                "https://dev.inspiringbangladesh.com/api/v1/stories",
+                formData,
+                {
+                    headers: {
+                        Authorization: authToken,
+                        "Content-Type": "multipart/form-data",
+                    },
+                    onUploadProgress: function(progressEvent) {
+                        let percentCompleted = Math.round(
+                            (progressEvent.loaded * 100) / progressEvent.total,
+                        );
+                        dispatch({
+                            type: UPLOAD_PROGRESS,
+                            payload: percentCompleted,
+                        });
+                    },
+                },
+            )
+            .then(response => {
+                if (response.data.story) {
+                    dispatch({
+                        type: SUBMIT_STORY,
+                        payload: response.data.story,
+                    });
+                }
+            });
+    }
+};
+
+export const handleInspired = (
+    storyId,
+    currentUserId,
+    authToken,
+) => dispatch => {
+    axios
+        .post(
+            `https://dev.inspiringbangladesh.com/api/v1/stories/${storyId}/inspired`,
+            {
+                user_id: currentUserId,
+            },
+            {
+                headers: {
+                    Authorization: authToken,
+                },
+            },
+        )
+        .then(response => {
+            dispatch({
+                type: INSPIRE_STORY,
+                payload: {deleted: response.data.deleted, storyId},
+            });
+        })
+        .catch(err => {
+            console.log("Story liking error");
+            console.log(err);
+        });
 };
 
 export const loadRootComments = (

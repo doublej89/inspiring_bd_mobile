@@ -1,4 +1,11 @@
-import {LOAD_STORIES, REFRESH_PAGE, UPDATE_COMMENT_COUNT} from "../types";
+import {
+    LOAD_STORIES,
+    REFRESH_PAGE,
+    UPDATE_COMMENT_COUNT,
+    INSPIRE_STORY,
+    UPLOAD_PROGRESS,
+    SUBMIT_STORY,
+} from "../types";
 
 const initialState = {
     stories: [],
@@ -7,6 +14,7 @@ const initialState = {
     hasMoreItems: false,
     refreshing: false,
     loading: true,
+    uploadProgress: 0,
 };
 
 export default function(state = initialState, action) {
@@ -51,12 +59,36 @@ export default function(state = initialState, action) {
                 };
             }
         }
+        case SUBMIT_STORY: {
+            const {stories} = state;
+            return {...state, stories: [action.payload, ...stories]};
+        }
+        case UPLOAD_PROGRESS: {
+            return {...state, uploadProgress: action.payload};
+        }
         case UPDATE_COMMENT_COUNT: {
             let storyId = action.payload;
             let {stories} = state;
             const updatedStories = stories.map(story => {
                 if (story.id === storyId) {
                     return {...story, comments_count: story.comments_count + 1};
+                }
+                return story;
+            });
+            return {...state, stories: updatedStories};
+        }
+        case INSPIRE_STORY: {
+            const {deleted, storyId} = action.payload;
+            const {stories} = state;
+            const updatedStories = stories.map(story => {
+                if (story.id === storyId) {
+                    return {
+                        ...story,
+                        inspirations_count: !deleted
+                            ? story.inspirations_count + 1
+                            : story.inspirations_count - 1,
+                        current_user_inspired: !deleted ? true : false,
+                    };
                 }
                 return story;
             });

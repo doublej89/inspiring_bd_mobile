@@ -1,8 +1,16 @@
 import React, {Component} from "react";
-import {View} from "react-native";
+import {View, Button} from "react-native";
 
-export default class StoryForm extends Component {
-    render() {
-        return <View></View>;
-    }
+function StoryForm(props) {
+    const {activateModal} = props;
+    return (
+        <Button
+            title="Create a story..."
+            color="#4287f5"
+            onPress={activateModal}
+            style={{width: "100%"}}
+        />
+    );
 }
+
+export default StoryForm;

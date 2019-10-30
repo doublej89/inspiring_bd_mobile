@@ -1,13 +1,11 @@
-import React, {Component} from "react";
+import React from "react";
 import {
     View,
     Text,
     Image,
     StyleSheet,
     TouchableHighlight,
-    FlatList,
-    TextInput,
-    PanResponder,
+    TouchableOpacity,
 } from "react-native";
 import TimeAgo from "react-native-timeago";
 import {cleanHtml} from "../utils";
@@ -16,135 +14,92 @@ import CommentIcon from "../assets/icons/comment.svg";
 import FollowIcon from "../assets/icons/follow.svg";
 import {FontAwesomeIcon} from "@fortawesome/react-native-fontawesome";
 import {faHeart} from "@fortawesome/free-solid-svg-icons";
+import {handleInspired} from "../actions/content";
+import {connect} from "react-redux";
 
-class Story extends Component {
-    // constructor(props) {
-    //     super(props);
-    //     this.state = {
-    //         newCommentContent: "",
-    //         dragPanel: true,
-    //     };
-    //     this._onGrant = this._onGrant.bind(this);
-    //     this._onRelease = this._onRelease.bind(this);
-    //     this.handleCommentSubmission = this.handleCommentSubmission.bind(this);
-    //     this.handleSubmitEditing = this.handleSubmitEditing.bind(this);
-    //     this._panResponder = PanResponder.create({
-    //         onStartShouldSetPanResponder: this._onGrant,
-    //         onMoveShouldSetPanResponder: this._onGrant,
-    //         onPanResponderRelease: this._onRelease,
-    //         onPanResponderTerminate: this._onRelease,
-    //     });
-    // }
+function Story(props) {
+    let {story, navigation, handleInspired, currentUserId, authToken} = props;
+    let {user} = story;
 
-    // _onGrant() {
-    //     this.setState({dragPanel: false});
-    //     return true;
-    // }
-
-    // _onRelease() {
-    //     this.setState({dragPanel: true});
-    // }
-
-    // handleCommentSubmission(evt) {
-    //     const {submitComment, story, authToken} = this.props;
-    //     const {newCommentContent} = this.state;
-    //     if (evt.nativeEvent.key === "Enter") {
-    //         this.setState({newCommentContent: ""}, () => {
-    //             submitComment(
-    //                 newCommentContent,
-    //                 story.id,
-    //                 story.comments_count,
-    //                 authToken,
-    //             );
-    //         });
-    //     }
-    // }
-
-    // handleSubmitEditing(evt) {
-    //     const {text} = evt.nativeEvent;
-    //     const {story, submitComment, authToken} = this.props;
-    //     this.setState({newCommentContent: ""}, () => {
-    //         submitComment(text, story.id, story.comments_count, authToken);
-    //     });
-    // }
-
-    render() {
-        let {story, navigation} = this.props;
-        let {user} = story;
-
-        return (
-            <View style={styles.postContainer}>
-                <View style={styles.postCard}>
-                    {story && story.photos[0] && (
+    return (
+        <View style={styles.postContainer}>
+            <View style={styles.postCard}>
+                {story && story.photos[0] && (
+                    <Image
+                        source={{uri: story.photos[0].url}}
+                        style={styles.cardImgTop}
+                    />
+                )}
+            </View>
+            <View style={styles.singlePostContent}>
+                <View style={styles.singlePostUser}>
+                    {story && story.user && (
                         <Image
-                            source={{uri: story.photos[0].url}}
-                            style={styles.cardImgTop}
+                            source={{uri: story.user.avatar_url}}
+                            style={styles.profileImage}
                         />
                     )}
-                </View>
-                <View style={styles.singlePostContent}>
-                    <View style={styles.singlePostUser}>
-                        {story && story.user && (
-                            <Image
-                                source={{uri: story.user.avatar_url}}
-                                style={styles.profileImage}
-                            />
+                    <View style={{padding: 4, marginLeft: 10}}>
+                        {story.user && (
+                            <Text
+                                style={{
+                                    fontSize: 14,
+                                    marginBottom: 0,
+                                }}>
+                                {story.user.name}
+                            </Text>
                         )}
-                        <View style={{padding: 4, marginLeft: 10}}>
-                            {story.user && (
-                                <Text
-                                    style={{
-                                        fontSize: 14,
-                                        marginBottom: 0,
-                                    }}>
-                                    {story.user.name}
-                                </Text>
-                            )}
-                            {story.user && (
-                                <Text
-                                    style={{
-                                        color: "#84A6F6",
-                                        fontSize: 16,
-                                    }}>
-                                    @{user.handle}
-                                </Text>
-                            )}
-                        </View>
-                        <FollowIcon
-                            style={{marginLeft: "auto", marginBottom: 15}}
-                        />
+                        {story.user && (
+                            <Text
+                                style={{
+                                    color: "#84A6F6",
+                                    fontSize: 16,
+                                }}>
+                                @{user.handle}
+                            </Text>
+                        )}
                     </View>
-                    <TimeAgo
-                        time={story.created_at}
-                        style={{
-                            marginLeft: 10,
-                            marginRight: 10,
-                            fontSize: 12,
-                        }}
+                    <FollowIcon
+                        style={{marginLeft: "auto", marginBottom: 15}}
                     />
-                    <Text style={{color: "#7A7979", marginTop: 5}}>
-                        {cleanHtml(story.description)}
-                    </Text>
-                    <TouchableHighlight
-                        onPress={() => {
-                            //this._panel.show();
-                            navigation.navigate("CommentsList", {
-                                storyId: story.id,
-                                commentsCount: story.comments_count,
-                            });
-                        }}>
-                        <View style={styles.singlePostStat}>
-                            <LovedIcon style={{height: 30, width: 30}} />
-                            <Text>{story.inspirations_count}</Text>
-                            <CommentIcon style={{height: 30, width: 30}} />
-                            <Text>{story.comments_count}</Text>
-                        </View>
-                    </TouchableHighlight>
-                    <View
-                        style={{
-                            backgroundColor: "#D8D8D8",
-                            height: 1,
-                        }}></View>
+                </View>
+                <TimeAgo
+                    time={story.created_at}
+                    style={{
+                        marginLeft: 10,
+                        marginRight: 10,
+                        fontSize: 12,
+                    }}
+                />
+                <Text style={{color: "#7A7979", marginTop: 5}}>
+                    {cleanHtml(story.description)}
+                </Text>
+                <TouchableHighlight
+                    onPress={() => {
+                        //this._panel.show();
+                        navigation.navigate("CommentsList", {
+                            storyId: story.id,
+                            commentsCount: story.comments_count,
+                        });
+                    }}>
+                    <View style={styles.singlePostStat}>
+                        <LovedIcon
+                            style={{height: 30, width: 30, color: "red"}}
+                        />
+                        <Text>{story.inspirations_count}</Text>
+                        <CommentIcon style={{height: 30, width: 30}} />
+                        <Text>{story.comments_count}</Text>
+                    </View>
+                </TouchableHighlight>
+                <View
+                    style={{
+                        backgroundColor: "#D8D8D8",
+                        height: 1,
+                    }}></View>
+                <TouchableOpacity
+                    onPress={() =>
+                        handleInspired(story.id, currentUserId, authToken)
+                    }>
                     <View
                         style={{
                             flexDirection: "row",
@@ -156,54 +111,19 @@ class Story extends Component {
                         <FontAwesomeIcon
                             icon={faHeart}
                             style={{
-                                fontSize: 80,
                                 marginTop: 10,
                                 marginBottom: 10,
                                 marginRight: 10,
                                 marginLeft: 10,
-                                color: "red",
+                                width: 30,
+                                height: 30,
                             }}
                         />
                     </View>
-                </View>
-                {/* <SlidingUpPanel
-                    allowDragging={this.state.dragPanel}
-                    ref={c => (this._panel = c)}>
-                    <View
-                        style={{flex: 1, flexDirection: "column"}}
-                        {...this._panResponder.panHandlers}>
-                        <FlatList
-                            contentContainerStyle={{
-                                flex: 1,
-                                flexDirection: "column",
-                            }}
-                            data={comments}
-                            renderItem={({item}) => (
-                                <Comment
-                                    {...this._panResponder.panHandlers}
-                                    comment={item}
-                                />
-                            )}
-                            keyExtractor={item => item.id.toString()}
-                            onEndReached={() =>
-                                loadRootComments(story.id, hasMoreItems, page)
-                            }
-                            onEndReachedThreshold={0.5}
-                            initialNumToRender={10}
-                            {...this._panResponder.panHandlers}
-                        />
-                        <TextInput
-                            onKeyPress={this.handleCommentSubmission}
-                            onChangeText={value =>
-                                this.setState({newCommentContent: value})
-                            }
-                            onSubmitEditing={this.handleSubmitEditing}
-                        />
-                    </View>
-                </SlidingUpPanel> */}
+                </TouchableOpacity>
             </View>
-        );
-    }
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({
@@ -244,11 +164,12 @@ const styles = StyleSheet.create({
     },
 });
 
-// const mapStateToProps = state => ({
-//     authToken: state.auth.authToken,
-//     comments: state.commentList.comments,
-//     commentsPage: state.commentList.commentsPage,
-//     hasMoreItems: state.commentList.hasMoreItems,
-// });
+const mapStateToProps = state => ({
+    currentUserId: state.auth.currentUserId,
+    authToken: state.auth.authToken,
+});
 
-export default Story;
+export default connect(
+    mapStateToProps,
+    {handleInspired},
+)(Story);
