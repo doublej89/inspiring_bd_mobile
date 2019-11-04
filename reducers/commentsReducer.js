@@ -7,6 +7,8 @@ import {
     SUBMIT_REPLY,
     CLOSE_REPLIES_LIST,
     CLOSE_COMMENTS_MODAL,
+    UPDATE_COMMENT,
+    DELETE_COMMENT,
 } from "../types";
 
 const initialState = {
@@ -51,6 +53,25 @@ export default function commentsReducer(state = initialState, action) {
             }
             break;
         }
+        case UPDATE_COMMENT: {
+            let {comment} = action.payload;
+            const {comments} = state;
+            const updatedComments = comments.map(el => {
+                if (el.id === comment.id) {
+                    return {...comment};
+                }
+                return el;
+            });
+            return {...state, comments: updatedComments};
+        }
+        case DELETE_COMMENT: {
+            const commentId = action.payload;
+            const {comments} = state;
+            const updatedComments = comments.filter(
+                comment => comment.id !== commentId,
+            );
+            return {...state, comments: updatedComments};
+        }
         case CLOSE_COMMENTS_LIST: {
             return {
                 ...state,
@@ -78,13 +99,16 @@ export default function commentsReducer(state = initialState, action) {
             return {...state, replies: [...replies]};
         }
         case UPDATE_REPLY_COUNT: {
-            const commentId = action.payload;
+            const {commentId, updateType} = action.payload;
             const {comments} = state;
             const updatedComments = comments.map(comment => {
                 if (comment.id === commentId) {
                     return {
                         ...comment,
-                        replies_count: comment.replies_count + 1,
+                        replies_count:
+                            updateType === "up"
+                                ? comment.replies_count + 1
+                                : comment.replies_count - 1,
                     };
                 }
                 return comment;

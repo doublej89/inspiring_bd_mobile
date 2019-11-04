@@ -1,5 +1,13 @@
 import React, {Component} from "react";
-import {View, FlatList, TextInput, Button, StyleSheet} from "react-native";
+import {
+    View,
+    FlatList,
+    TextInput,
+    Text,
+    StyleSheet,
+    Alert,
+    TouchableOpacity,
+} from "react-native";
 import {connect} from "react-redux";
 import {
     loadRootComments,
@@ -9,6 +17,8 @@ import {
 } from "../actions/content";
 import Comment from "./Comment";
 import ModalCloseButton from "./ModalCloseButton";
+import {updateComment, deleteComment} from "../actions/content";
+import Modal from "react-native-modal";
 
 class CommentList extends Component {
     static navigationOptions = props => {
@@ -21,9 +31,21 @@ class CommentList extends Component {
 
     constructor(props) {
         super(props);
-        this.state = {newCommentContent: "", storyId: null, commentCount: 0};
+        this.state = {
+            newCommentContent: "",
+            storyId: null,
+            commentCount: 0,
+            isMenuVisible: false,
+            selectedCommentId: null,
+            updatedCommentBody: "",
+            selectedCommentBody: "",
+            updateSelected: false,
+            isUpdateInputVisible: false,
+        };
         this.handleCommentSubmission = this.handleCommentSubmission.bind(this);
         this.handleSubmitEditing = this.handleSubmitEditing.bind(this);
+        this.handleUpdateSubmit = this.handleUpdateSubmit.bind(this);
+        this.toggleEditMenu = this.toggleEditMenu.bind(this);
     }
 
     componentDidMount() {
@@ -84,6 +106,35 @@ class CommentList extends Component {
         });
     }
 
+    toggleEditMenu(commentId = null, commentBody = "") {
+        if (commentId === null || commentBody.length === 0) {
+            this.setState({isMenuVisible: !this.state.isMenuVisible});
+        } else {
+            this.setState({
+                isMenuVisible: !this.state.isMenuVisible,
+                selectedCommentId: commentId,
+                selectedCommentBody: commentBody,
+            });
+        }
+    }
+
+    handleUpdateSubmit() {
+        const {text} = evt.nativeEvent;
+        const {storyId, selectedCommentId} = this.state;
+        const {updateComment, authToken} = this.props;
+        this.setState(
+            {
+                selectedCommentId: null,
+                selectedCommentBody: "",
+                updatedCommentBody: "",
+                isUpdateInputVisible: false,
+            },
+            () => {
+                updateComment(selectedCommentId, storyId, text, authToken);
+            },
+        );
+    }
+
     render() {
         const {
             loadRootComments,
@@ -91,8 +142,19 @@ class CommentList extends Component {
             hasMoreItems,
             comments,
             authToken,
+            deleteComment,
+            currentUserId,
         } = this.props;
-        const {commentCount, storyId, newCommentContent} = this.state;
+        const {
+            commentCount,
+            storyId,
+            newCommentContent,
+            isMenuVisible,
+            selectedCommentId,
+            updateSelected,
+            isUpdateInputVisible,
+            updatedCommentBody,
+        } = this.state;
         console.log(comments);
         return (
             <View style={{flexDirection: "column", flex: 1, padding: 20}}>
@@ -108,6 +170,12 @@ class CommentList extends Component {
                                 // {...this._panResponder.panHandlers}
                                 comment={item}
                                 navigation={this.props.navigation}
+                                toggleEditMenu={this.toggleEditMenu}
+                                currentUser={
+                                    item.user.id === currentUserId
+                                        ? true
+                                        : false
+                                }
                             />
                         )}
                         keyExtractor={item => item.id.toString()}
@@ -136,6 +204,93 @@ class CommentList extends Component {
                     style={styles.textInputStyle}
                     value={newCommentContent}
                 />
+                {/* <CommentEditOptions
+                    passedDeleteAction={deleteComment}
+                    passedUpdateAction={updateComment}
+                    itemIdentifier={storyId}
+                    authToken={authToken}
+                    toggleEditMenu={this.toggleEditMenu}
+                    isMenuVisible={isMenuVisible}
+                /> */}
+                <Modal
+                    isVisible={isMenuVisible}
+                    onSwipeComplete={() => this.toggleEditMenu()}
+                    swipeDirection={["down"]}
+                    onModalHide={() => {
+                        if (updateSelected) {
+                            this.setState({isUpdateInputVisible: true});
+                        } else {
+                            this.setState({
+                                selectedCommentId: null,
+                                selectedCommentBody: "",
+                            });
+                        }
+                    }}
+                    style={styles.bottomModal}>
+                    <View style={styles.container}>
+                        <TouchableOpacity
+                            onPress={() =>
+                                this.setState({
+                                    updateSelected: true,
+                                    isMenuVisible: false,
+                                })
+                            }>
+                            <View style={styles.option}>
+                                <Text style={{fontSize: 20}}>Update</Text>
+                            </View>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={() => {
+                                Alert.alert(
+                                    "Are you sure you wish to delete this item?",
+                                    null,
+                                    [
+                                        {
+                                            text: "Cancel",
+                                            onPress: () =>
+                                                console.log("Cancel Pressed"),
+                                        },
+                                        {
+                                            text: "OK",
+                                            onPress: () => {
+                                                deleteComment(
+                                                    selectedCommentId,
+                                                    storyId,
+                                                    authToken,
+                                                );
+                                                this.setState({
+                                                    isMenuVisible: false,
+                                                });
+                                            },
+                                        },
+                                    ],
+                                );
+                            }}>
+                            <View style={styles.option}>
+                                <Text style={{fontSize: 20}}>Delete</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
+                </Modal>
+                <Modal
+                    isVisible={isUpdateInputVisible}
+                    onSwipeComplete={() =>
+                        this.setState({isUpdateInputVisible: false})
+                    }
+                    swipeDirection={["down"]}
+                    onModalShow={() => this.setState({updateSelected: false})}
+                    style={styles.bottomModal}>
+                    <View style={{backgroundColor: "white", padding: 20}}>
+                        <TextInput
+                            onChangeText={value =>
+                                this.setState({updatedCommentBody: value})
+                            }
+                            onSubmitEditing={this.handleUpdateSubmit}
+                            value={updatedCommentBody}
+                            style={styles.textInputStyle}
+                        />
+                    </View>
+                </Modal>
             </View>
         );
     }
@@ -152,10 +307,26 @@ const styles = StyleSheet.create({
         marginTop: 12,
         flex: 0.1,
     },
+    container: {
+        justifyContent: "flex-end",
+        alignItems: "stretch",
+        backgroundColor: "white",
+        borderRadius: 4,
+    },
+    bottomModal: {
+        justifyContent: "flex-end",
+        margin: 0,
+    },
+    option: {
+        padding: 20,
+        height: 50,
+        borderBottomColor: "rgba(0, 0, 0, 0.4)",
+    },
 });
 
 const mapStateToProps = state => ({
     authToken: state.auth.authToken,
+    currentUserId: state.auth.currentUserId,
     comments: state.commentList.comments,
     commentsPage: state.commentList.commentsPage,
     hasMoreItems: state.commentList.hasMoreItems,
@@ -163,5 +334,12 @@ const mapStateToProps = state => ({
 
 export default connect(
     mapStateToProps,
-    {loadRootComments, submitComment, updateCommentCount, closeCommentList},
+    {
+        loadRootComments,
+        submitComment,
+        updateCommentCount,
+        closeCommentList,
+        updateComment,
+        deleteComment,
+    },
 )(CommentList);

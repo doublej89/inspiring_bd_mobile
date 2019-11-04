@@ -26,7 +26,7 @@ export const login = (credentials, navigation) => dispatch => {
                 type: USER_AUTHENTICATED,
                 payload: {
                     authToken: response.data.auth_token,
-                    currentUserId: decoded.user_id,
+                    currentUserId: +decoded.user_id,
                 },
             });
             if (response.data.auth_token) navigation.navigate("App");
@@ -50,7 +50,7 @@ export const signup = (credentials, navigation) => dispatch => {
                 type: USER_AUTHENTICATED,
                 payload: {
                     authToken: response.data.auth_token,
-                    currentUserId: decoded.user_id,
+                    currentUserId: +decoded.user_id,
                 },
             });
             if (response.data.auth_token) navigation.navigate("App");

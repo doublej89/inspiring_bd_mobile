@@ -5,6 +5,8 @@ import {
     INSPIRE_STORY,
     UPLOAD_PROGRESS,
     SUBMIT_STORY,
+    UPDATE_STORY,
+    DELETE_STORY,
 } from "../types";
 
 const initialState = {
@@ -63,15 +65,38 @@ export default function(state = initialState, action) {
             const {stories} = state;
             return {...state, stories: [action.payload, ...stories]};
         }
+        case UPDATE_STORY: {
+            const story = action.payload;
+            const updatedStories = state.stories.map(el => {
+                if (el.id === story.id) {
+                    return {...story};
+                }
+                return el;
+            });
+            return {...state, stories: updatedStories};
+        }
+        case DELETE_STORY: {
+            const storyId = action.payload;
+            const updatedStories = state.stories.filter(
+                story => story.id !== storyId,
+            );
+            return {...state, stories: updatedStories};
+        }
         case UPLOAD_PROGRESS: {
             return {...state, uploadProgress: action.payload};
         }
         case UPDATE_COMMENT_COUNT: {
-            let storyId = action.payload;
+            let {storyId, updateType} = action.payload;
             let {stories} = state;
             const updatedStories = stories.map(story => {
                 if (story.id === storyId) {
-                    return {...story, comments_count: story.comments_count + 1};
+                    return {
+                        ...story,
+                        comments_count:
+                            updateType === "up"
+                                ? story.comments_count + 1
+                                : story.comments_count - 1,
+                    };
                 }
                 return story;
             });

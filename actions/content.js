@@ -14,6 +14,10 @@ import {
     INSPIRE_STORY,
     UPLOAD_PROGRESS,
     SUBMIT_STORY,
+    UPDATE_COMMENT,
+    DELETE_COMMENT,
+    UPDATE_STORY,
+    DELETE_STORY,
 } from "../types";
 import axios from "axios";
 import {strim} from "../utils";
@@ -36,41 +40,61 @@ export const loadItems = page => dispatch => {
         .catch(err => console.log(err));
 };
 
-export const submitStory = (description, file, authToken) => dispatch => {
+export const submitStory = (
+    description,
+    file,
+    authToken,
+    storyId = null,
+) => dispatch => {
     const storyContent = strim(description);
     let formData = new FormData();
     formData.append("story[description]", storyContent);
     formData.append("story[photos][]", file, file.name);
+    const config = {
+        headers: {
+            Authorization: authToken,
+            "Content-Type": "multipart/form-data",
+        },
+        onUploadProgress: function(progressEvent) {
+            let percentCompleted = Math.round(
+                (progressEvent.loaded * 100) / progressEvent.total,
+            );
+            dispatch({
+                type: UPLOAD_PROGRESS,
+                payload: percentCompleted,
+            });
+        },
+    };
     if (storyContent.length > 0) {
-        axios
-            .post(
+        let request;
+        if (storyId === null) {
+            request = axios.post(
                 "https://dev.inspiringbangladesh.com/api/v1/stories",
                 formData,
-                {
-                    headers: {
-                        Authorization: authToken,
-                        "Content-Type": "multipart/form-data",
-                    },
-                    onUploadProgress: function(progressEvent) {
-                        let percentCompleted = Math.round(
-                            (progressEvent.loaded * 100) / progressEvent.total,
-                        );
-                        dispatch({
-                            type: UPLOAD_PROGRESS,
-                            payload: percentCompleted,
-                        });
-                    },
-                },
-            )
-            .then(response => {
-                if (response.data.story) {
-                    dispatch({
-                        type: SUBMIT_STORY,
-                        payload: response.data.story,
-                    });
-                }
-            });
+                config,
+            );
+        } else {
+            request = axios.put(
+                `https://dev.inspiringbangladesh.com/api/v1/stories/${storyId}`,
+                formData,
+                config,
+            );
+        }
+        request.then(response => {
+            if (response.data.story) {
+                dispatch({
+                    type: storyId === null ? SUBMIT_STORY : UPDATE_STORY,
+                    payload: response.data.story,
+                });
+            }
+        });
     }
+};
+
+export const deleteStory = storyId => dispatch => {
+    axios
+        .delete(`https://dev.inspiringbangladesh.com/api/v1/stories/${storyId}`)
+        .then(() => dispatch({type: DELETE_STORY, payload: storyId}));
 };
 
 export const handleInspired = (
@@ -173,6 +197,63 @@ export const submitComment = (
     }
 };
 
+export const updateComment = (
+    commentId,
+    storyId,
+    newCommentBody,
+    authToken,
+) => dispatch => {
+    let commentContent = strim(newCommentBody);
+    if (commentContent.length > 0) {
+        axios
+            .put(
+                `https://dev.inspiringbangladesh.com/api/v1/stories/${storyId}/comments/${commentId}`,
+                {comment: {body: commentContent}},
+                {
+                    headers: {
+                        Authorization: authToken,
+                    },
+                },
+            )
+            .then(response => {
+                if (response.data.comment) {
+                    dispatch({
+                        type: UPDATE_COMMENT,
+                        payload: response.data,
+                    });
+                }
+            })
+            .catch(err => {
+                console.log("Comment update error");
+                console.log(err);
+            });
+    }
+};
+
+export const deleteComment = (
+    commentId,
+    storyId,
+    authToken,
+    isReply = false,
+) => dispatch => {
+    axios
+        .delete(
+            `https://dev.inspiringbangladesh.com/api/v1/stories/${storyId}/comments/${commentId}`,
+            {
+                headers: {
+                    Authorization: authToken,
+                },
+            },
+        )
+        .then(() => {
+            dispatch({type: DELETE_COMMENT, payload: commentId});
+            if (isReply) {
+                dispatch(updateReplyCount(commentId, "down"));
+            }
+            dispatch(updateCommentCount(storyId, "down"));
+        });
+};
+
 export const submitReply = (
     newReplyContent,
     storyId,
@@ -197,9 +278,12 @@ export const submitReply = (
                         type: SUBMIT_REPLY,
                         payload: response.data,
                     });
-                    dispatch(updateReplyCount(commentId));
+                    dispatch(updateReplyCount(commentId, "up"));
                     dispatch(
-                        updateCommentCount(response.data.comment.story_id),
+                        updateCommentCount(
+                            response.data.comment.story_id,
+                            "up",
+                        ),
                     );
                 }
             })
@@ -219,14 +303,14 @@ export const closeCommentList = () => ({
     type: CLOSE_COMMENTS_LIST,
 });
 
-export const updateCommentCount = storyId => ({
+export const updateCommentCount = (storyId, updateType) => ({
     type: UPDATE_COMMENT_COUNT,
-    payload: storyId,
+    payload: {storyId, updateType},
 });
 
-export const updateReplyCount = commentId => ({
+export const updateReplyCount = (commentId, updateType) => ({
     type: UPDATE_REPLY_COUNT,
-    payload: commentId,
+    payload: {commentId, updateType},
 });
 
 export const loadReplies = (

@@ -27,8 +27,10 @@ class CommentList extends Component {
             commentId: null,
             repliesCount: 0,
         };
+        this.replyField = React.createRef();
         this.handleCommentSubmission = this.handleCommentSubmission.bind(this);
         this.handleSubmitEditing = this.handleSubmitEditing.bind(this);
+        this.replyToReply = this.replyToReply.bind(this);
     }
 
     componentDidMount() {
@@ -81,6 +83,12 @@ class CommentList extends Component {
         });
     }
 
+    replyToReply(username) {
+        this.setState({newReplyContent: `@${username}`}, () => {
+            this.replyField.current.focus();
+        });
+    }
+
     render() {
         const {replies} = this.props;
         const {newReplyContent} = this.state;
@@ -103,6 +111,7 @@ class CommentList extends Component {
                             <Comment
                                 // {...this._panResponder.panHandlers}
                                 comment={item}
+                                replyToReply={this.replyToReply}
                             />
                         )}
                         keyExtractor={item => item.id.toString()}
@@ -111,6 +120,7 @@ class CommentList extends Component {
                     />
                 </View>
                 <TextInput
+                    ref={this.replyField}
                     placeholder="Write reply..."
                     onKeyPress={this.handleCommentSubmission}
                     onChangeText={value =>

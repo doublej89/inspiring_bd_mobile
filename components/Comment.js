@@ -5,14 +5,23 @@ import {
     Image,
     Text,
     TouchableNativeFeedback,
+    TouchableOpacity,
 } from "react-native";
 import ReplyIcon from "../assets/icons/reply.svg";
 import CommentIcon from "../assets/icons/comment.svg";
 import {cleanHtml} from "../utils";
 import TimeAgo from "react-native-timeago";
+import {FontAwesomeIcon} from "@fortawesome/react-native-fontawesome";
+import {faEllipsisV} from "@fortawesome/free-solid-svg-icons";
 
 function Comment(props) {
-    const {comment, navigation} = props;
+    const {
+        comment,
+        navigation,
+        replyToReply,
+        toggleEditMenu,
+        currentUser,
+    } = props;
     return (
         <View style={styles.commentContainer}>
             <View style={{flexDirection: "row"}}>
@@ -28,9 +37,22 @@ function Comment(props) {
                 </View>
             </View>
             <View style={styles.commentBody}>
-                <Text style={styles.commentText}>
-                    {cleanHtml(comment.body)}
-                </Text>
+                <View style={{flexDirection: "row"}}>
+                    <Text style={styles.commentText}>
+                        {cleanHtml(comment.body)}
+                    </Text>
+                    {currentUser && (
+                        <TouchableOpacity
+                            onPress={() =>
+                                toggleEditMenu(comment.id, comment.body)
+                            }>
+                            <View style={{flex: 0.1, alignSelf: "flex-start"}}>
+                                <FontAwesomeIcon icon={faEllipsisV} />
+                            </View>
+                        </TouchableOpacity>
+                    )}
+                </View>
+
                 <View
                     style={{
                         flexDirection: "row",
@@ -45,19 +67,25 @@ function Comment(props) {
                     <TimeAgo time={comment.created_at} style={styles.timeAgo} />
                     <View style={{flexDirection: "row"}}>
                         <TouchableNativeFeedback
-                            onPress={() =>
-                                navigation.navigate("RepliesList", {
-                                    storyId: comment.story_id,
-                                    commentId: comment.id,
-                                    repliesCount: comment.replies_count,
-                                })
-                            }>
-                            <View style={{flexDirection: "row"}}>
-                                <CommentIcon style={styles.actionIcon} />
-                                <Text style={styles.commentText}>
-                                    {comment.replies_count}
-                                </Text>
-                            </View>
+                            onPress={() => {
+                                if (replyToReply) {
+                                    replyToReply(comment.user.name);
+                                } else {
+                                    navigation.navigate("RepliesList", {
+                                        storyId: comment.story_id,
+                                        commentId: comment.id,
+                                        repliesCount: comment.replies_count,
+                                    });
+                                }
+                            }}>
+                            {!replyToReply && (
+                                <View style={{flexDirection: "row"}}>
+                                    <CommentIcon style={styles.actionIcon} />
+                                    <Text style={styles.commentText}>
+                                        {comment.replies_count}
+                                    </Text>
+                                </View>
+                            )}
                         </TouchableNativeFeedback>
                     </View>
                 </View>
@@ -85,6 +113,8 @@ const styles = StyleSheet.create({
         fontSize: 14,
         marginBottom: 15,
         color: "#535454",
+        flex: 0.9,
+        alignSelf: "stretch",
     },
     actionIcon: {
         width: 25,
