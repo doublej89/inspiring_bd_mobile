@@ -118,7 +118,7 @@ class CommentList extends Component {
         }
     }
 
-    handleUpdateSubmit() {
+    handleUpdateSubmit(evt) {
         const {text} = evt.nativeEvent;
         const {storyId, selectedCommentId} = this.state;
         const {updateComment, authToken} = this.props;
@@ -154,6 +154,7 @@ class CommentList extends Component {
             updateSelected,
             isUpdateInputVisible,
             updatedCommentBody,
+            selectedCommentBody,
         } = this.state;
         console.log(comments);
         return (
@@ -204,14 +205,6 @@ class CommentList extends Component {
                     style={styles.textInputStyle}
                     value={newCommentContent}
                 />
-                {/* <CommentEditOptions
-                    passedDeleteAction={deleteComment}
-                    passedUpdateAction={updateComment}
-                    itemIdentifier={storyId}
-                    authToken={authToken}
-                    toggleEditMenu={this.toggleEditMenu}
-                    isMenuVisible={isMenuVisible}
-                /> */}
                 <Modal
                     isVisible={isMenuVisible}
                     onSwipeComplete={() => this.toggleEditMenu()}
@@ -278,9 +271,14 @@ class CommentList extends Component {
                         this.setState({isUpdateInputVisible: false})
                     }
                     swipeDirection={["down"]}
-                    onModalShow={() => this.setState({updateSelected: false})}
+                    onModalShow={() =>
+                        this.setState({
+                            updateSelected: false,
+                            updatedCommentBody: selectedCommentBody,
+                        })
+                    }
                     style={styles.bottomModal}>
-                    <View style={{backgroundColor: "white", padding: 20}}>
+                    <View style={{backgroundColor: "white", height: 80}}>
                         <TextInput
                             onChangeText={value =>
                                 this.setState({updatedCommentBody: value})
@@ -299,7 +297,7 @@ class CommentList extends Component {
 const styles = StyleSheet.create({
     textInputStyle: {
         alignSelf: "center",
-        height: 40,
+        height: 60,
         width: "90%",
         borderWidth: 1,
         borderColor: "#4CAF50",
