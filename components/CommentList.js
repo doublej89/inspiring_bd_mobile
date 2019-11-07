@@ -37,14 +37,15 @@ class CommentList extends Component {
             commentCount: 0,
             isMenuVisible: false,
             selectedCommentId: null,
-            updatedCommentBody: "",
+            // updatedCommentBody: "",
             selectedCommentBody: "",
             updateSelected: false,
-            isUpdateInputVisible: false,
+            // isUpdateInputVisible: false,
         };
+        this.commentField = React.createRef();
         this.handleCommentSubmission = this.handleCommentSubmission.bind(this);
         this.handleSubmitEditing = this.handleSubmitEditing.bind(this);
-        this.handleUpdateSubmit = this.handleUpdateSubmit.bind(this);
+        // this.handleUpdateSubmit = this.handleUpdateSubmit.bind(this);
         this.toggleEditMenu = this.toggleEditMenu.bind(this);
     }
 
@@ -60,6 +61,7 @@ class CommentList extends Component {
         let commentCount = +JSON.stringify(
             navigation.getParam("commentsCount", "0"),
         );
+        console.log("Comment count comment " + storyId + ": " + commentCount);
         this.setState({storyId, commentCount});
         loadRootComments(
             storyId,
@@ -70,14 +72,22 @@ class CommentList extends Component {
         );
     }
 
-    componentDidUpdate(prevProps) {
-        let {commentCount} = this.state;
-        let currCommentsLength = this.props.comments.length;
-        let prevCommentsLength = prevProps.comments.length;
-        if (currCommentsLength > prevCommentsLength) {
-            let diff = currCommentsLength - prevCommentsLength;
-            commentCount += diff;
-            this.setState({commentCount});
+    componentDidUpdate(prevProps, prevState) {
+        let {updateSelected} = this.state;
+        // let currCommentsLength = this.props.comments.length;
+        // let prevCommentsLength = prevProps.comments.length;
+        // if (currCommentsLength > prevCommentsLength) {
+        //     let diff = currCommentsLength - prevCommentsLength;
+        //     commentCount += diff;
+        //     this.setState({commentCount});
+        // }
+        if (updateSelected !== prevState.updateSelected && updateSelected) {
+            this.setState(
+                {newCommentContent: this.state.selectedCommentBody},
+                () => {
+                    this._textInput.focus();
+                },
+            );
         }
     }
 
@@ -86,54 +96,96 @@ class CommentList extends Component {
     // }
 
     handleCommentSubmission(evt) {
-        const {submitComment, authToken} = this.props;
-        const {newCommentContent, storyId} = this.state;
+        const {submitComment, updateComment, authToken} = this.props;
+        const {
+            newCommentContent,
+            storyId,
+            updateSelected,
+            selectedCommentId,
+        } = this.state;
 
         if (evt.nativeEvent.key === "Enter") {
-            this.setState({newCommentContent: ""}, () => {
-                console.log("On key press: " + newCommentContent);
-                submitComment(newCommentContent, storyId, authToken);
-            });
+            if (!updateSelected) {
+                this.setState({newCommentContent: ""}, () => {
+                    console.log("On key press: " + newCommentContent);
+                    submitComment(newCommentContent, storyId, authToken);
+                });
+            } else {
+                this.setState(
+                    {
+                        selectedCommentId: null,
+                        selectedCommentBody: "",
+                        newCommentContent: "",
+                        updateSelected: false,
+                        // updatedCommentBody: "",
+                        // isUpdateInputVisible: false,
+                    },
+                    () => {
+                        updateComment(
+                            selectedCommentId,
+                            storyId,
+                            newCommentContent,
+                            authToken,
+                        );
+                    },
+                );
+            }
         }
     }
 
     handleSubmitEditing(evt) {
         const {text} = evt.nativeEvent;
-        const {submitComment, authToken} = this.props;
-        const {storyId} = this.state;
-        this.setState({newCommentContent: ""}, () => {
-            submitComment(text, storyId, authToken);
-        });
+        const {submitComment, updateComment, authToken} = this.props;
+        const {storyId, updateSelected, selectedCommentId} = this.state;
+        if (!updateSelected) {
+            this.setState({newCommentContent: ""}, () => {
+                submitComment(text, storyId, authToken);
+            });
+        } else {
+            this.setState(
+                {
+                    selectedCommentId: null,
+                    selectedCommentBody: "",
+                    newCommentContent: "",
+                    updateSelected: false,
+                    // updatedCommentBody: "",
+                    // isUpdateInputVisible: false,
+                },
+                () => {
+                    updateComment(selectedCommentId, storyId, text, authToken);
+                },
+            );
+        }
     }
 
-    toggleEditMenu(commentId = null, commentBody = "") {
+    toggleEditMenu(visiblity, commentId = null, commentBody = "") {
         if (commentId === null || commentBody.length === 0) {
-            this.setState({isMenuVisible: !this.state.isMenuVisible});
+            this.setState({isMenuVisible: visiblity});
         } else {
             this.setState({
-                isMenuVisible: !this.state.isMenuVisible,
+                isMenuVisible: visiblity,
                 selectedCommentId: commentId,
                 selectedCommentBody: commentBody,
             });
         }
     }
 
-    handleUpdateSubmit(evt) {
-        const {text} = evt.nativeEvent;
-        const {storyId, selectedCommentId} = this.state;
-        const {updateComment, authToken} = this.props;
-        this.setState(
-            {
-                selectedCommentId: null,
-                selectedCommentBody: "",
-                updatedCommentBody: "",
-                isUpdateInputVisible: false,
-            },
-            () => {
-                updateComment(selectedCommentId, storyId, text, authToken);
-            },
-        );
-    }
+    // handleUpdateSubmit(evt) {
+    //     const {text} = evt.nativeEvent;
+    //     const {storyId, selectedCommentId} = this.state;
+    //     const {updateComment, authToken} = this.props;
+    //     this.setState(
+    //         {
+    //             selectedCommentId: null,
+    //             selectedCommentBody: "",
+    //             updatedCommentBody: "",
+    //             // isUpdateInputVisible: false,
+    //         },
+    //         () => {
+    //             updateComment(selectedCommentId, storyId, text, authToken);
+    //         },
+    //     );
+    // }
 
     render() {
         const {
@@ -152,9 +204,6 @@ class CommentList extends Component {
             isMenuVisible,
             selectedCommentId,
             updateSelected,
-            isUpdateInputVisible,
-            updatedCommentBody,
-            selectedCommentBody,
         } = this.state;
         console.log(comments);
         return (
@@ -180,15 +229,15 @@ class CommentList extends Component {
                             />
                         )}
                         keyExtractor={item => item.id.toString()}
-                        onEndReached={() =>
-                            loadRootComments(
-                                storyId,
-                                authToken,
-                                commentCount,
-                                hasMoreItems,
-                                commentsPage,
-                            )
-                        }
+                        // onEndReached={() =>
+                        //     loadRootComments(
+                        //         storyId,
+                        //         authToken,
+                        //         commentCount,
+                        //         hasMoreItems,
+                        //         commentsPage,
+                        //     )
+                        // }
                         onEndReachedThreshold={0.5}
                         initialNumToRender={10}
                         extraData={this.props}
@@ -196,6 +245,7 @@ class CommentList extends Component {
                     />
                 </View>
                 <TextInput
+                    ref={component => (this._textInput = component)}
                     placeholder="Write comment..."
                     onKeyPress={this.handleCommentSubmission}
                     onChangeText={value =>
@@ -204,15 +254,21 @@ class CommentList extends Component {
                     onSubmitEditing={this.handleSubmitEditing}
                     style={styles.textInputStyle}
                     value={newCommentContent}
+                    onBlur={() => {
+                        if (this.state.updateSelected) {
+                            this.setState({
+                                updateSelected: false,
+                                newCommentContent: "",
+                            });
+                        }
+                    }}
                 />
                 <Modal
                     isVisible={isMenuVisible}
-                    onSwipeComplete={() => this.toggleEditMenu()}
+                    onSwipeComplete={() => this.toggleEditMenu(false)}
                     swipeDirection={["down"]}
                     onModalHide={() => {
-                        if (updateSelected) {
-                            this.setState({isUpdateInputVisible: true});
-                        } else {
+                        if (!updateSelected) {
                             this.setState({
                                 selectedCommentId: null,
                                 selectedCommentBody: "",
@@ -265,7 +321,7 @@ class CommentList extends Component {
                         </TouchableOpacity>
                     </View>
                 </Modal>
-                <Modal
+                {/* <Modal
                     isVisible={isUpdateInputVisible}
                     onSwipeComplete={() =>
                         this.setState({isUpdateInputVisible: false})
@@ -288,7 +344,7 @@ class CommentList extends Component {
                             style={styles.textInputStyle}
                         />
                     </View>
-                </Modal>
+                </Modal> */}
             </View>
         );
     }

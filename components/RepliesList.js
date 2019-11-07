@@ -1,14 +1,24 @@
 import React, {Component} from "react";
-import {View, FlatList, TextInput, Button, StyleSheet} from "react-native";
+import {
+    View,
+    FlatList,
+    TextInput,
+    Button,
+    StyleSheet,
+    TouchableOpacity,
+} from "react-native";
 import {connect} from "react-redux";
 import {
     loadReplies,
     submitReply,
     updateReplyCount,
     closeRepliesList,
+    updateComment,
+    deleteComment,
 } from "../actions/content";
 import Comment from "./Comment";
 import ModalCloseButton from "./ModalCloseButton";
+import Modal from "react-native-modal";
 
 class CommentList extends Component {
     static navigationOptions = props => {
@@ -26,6 +36,12 @@ class CommentList extends Component {
             storyId: null,
             commentId: null,
             repliesCount: 0,
+            updateSelected: false,
+            isMenuVisible: false,
+            selectedCommentId: null,
+            selectedCommentBody: "",
+            selectedCommentId: null,
+            selectedParentId: null,
         };
         this.replyField = React.createRef();
         this.handleCommentSubmission = this.handleCommentSubmission.bind(this);
@@ -57,6 +73,24 @@ class CommentList extends Component {
         }
     }
 
+    toggleEditMenu(
+        visiblity,
+        commentId = null,
+        commentBody = "",
+        parentId = null,
+    ) {
+        if (commentId === null || commentBody.length === 0) {
+            this.setState({isMenuVisible: visiblity});
+        } else {
+            this.setState({
+                isMenuVisible: visiblity,
+                selectedCommentId: commentId,
+                selectedCommentBody: commentBody,
+                selectedParentId: parentId,
+            });
+        }
+    }
+
     // componentWillUnmount() {
     //     this.props.closeRepliesList();
     // }
@@ -76,11 +110,33 @@ class CommentList extends Component {
     handleSubmitEditing(evt) {
         const {text} = evt.nativeEvent;
         const {submitReply, authToken} = this.props;
-        const {storyId, commentId} = this.state;
-        this.setState({newReplyContent: ""}, () => {
-            console.log("Submit reply: " + text);
-            submitReply(text, storyId, commentId, authToken);
-        });
+        const {
+            storyId,
+            commentId,
+            updateSelected,
+            selectedCommentId,
+            selectedParentId,
+        } = this.state;
+        if (!updateSelected) {
+            this.setState({newReplyContent: ""}, () => {
+                submitReply(text, storyId, commentId, authToken);
+            });
+        } else {
+            this.setState(
+                {
+                    selectedCommentId: null,
+                    selectedCommentBody: "",
+                    newReplyContent: "",
+                    updateSelected: false,
+                    selectedParentId: null,
+                    // updatedCommentBody: "",
+                    // isUpdateInputVisible: false,
+                },
+                () => {
+                    updateComment(selectedCommentId, storyId, text, authToken);
+                },
+            );
+        }
     }
 
     replyToReply(username) {
@@ -90,8 +146,8 @@ class CommentList extends Component {
     }
 
     render() {
-        const {replies} = this.props;
-        const {newReplyContent} = this.state;
+        const {replies, currentUserId} = this.props;
+        const {newReplyContent, selectedParentId} = this.state;
         return (
             <View style={{flexDirection: "column", flex: 1}}>
                 <View style={{flex: 0.9}}>
@@ -112,6 +168,12 @@ class CommentList extends Component {
                                 // {...this._panResponder.panHandlers}
                                 comment={item}
                                 replyToReply={this.replyToReply}
+                                toggleEditMenu={this.toggleEditMenu}
+                                currentUser={
+                                    item.user.id === currentUserId
+                                        ? true
+                                        : false
+                                }
                             />
                         )}
                         keyExtractor={item => item.id.toString()}
@@ -130,6 +192,68 @@ class CommentList extends Component {
                     style={styles.textInputStyle}
                     value={newReplyContent}
                 />
+                <Modal
+                    isVisible={isMenuVisible}
+                    onSwipeComplete={() => this.toggleEditMenu(false)}
+                    swipeDirection={["down"]}
+                    onModalHide={() => {
+                        if (!updateSelected) {
+                            this.setState({
+                                selectedCommentId: null,
+                                selectedCommentBody: "",
+                                selectedParentId: null,
+                            });
+                        }
+                    }}
+                    style={styles.bottomModal}>
+                    <View style={styles.container}>
+                        <TouchableOpacity
+                            onPress={() =>
+                                this.setState({
+                                    updateSelected: true,
+                                    isMenuVisible: false,
+                                })
+                            }>
+                            <View style={styles.option}>
+                                <Text style={{fontSize: 20}}>Update</Text>
+                            </View>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={() => {
+                                Alert.alert(
+                                    "Are you sure you wish to delete this item?",
+                                    null,
+                                    [
+                                        {
+                                            text: "Cancel",
+                                            onPress: () =>
+                                                console.log("Cancel Pressed"),
+                                        },
+                                        {
+                                            text: "OK",
+                                            onPress: () => {
+                                                deleteComment(
+                                                    selectedCommentId,
+                                                    storyId,
+                                                    authToken,
+                                                    selectedParentId,
+                                                );
+                                                this.setState({
+                                                    isMenuVisible: false,
+                                                    selectedCommentId: null,
+                                                    selectedParentId: null,
+                                                });
+                                            },
+                                        },
+                                    ],
+                                );
+                            }}>
+                            <View style={styles.option}>
+                                <Text style={{fontSize: 20}}>Delete</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
+                </Modal>
             </View>
         );
     }
@@ -150,10 +274,18 @@ const styles = StyleSheet.create({
 
 const mapStateToProps = state => ({
     authToken: state.auth.authToken,
+    currentUserId: state.auth.currentUserId,
     replies: state.commentList.replies,
 });
 
 export default connect(
     mapStateToProps,
-    {loadReplies, submitReply, updateReplyCount, closeRepliesList},
+    {
+        loadReplies,
+        submitReply,
+        updateReplyCount,
+        closeRepliesList,
+        updateComment,
+        deleteComment,
+    },
 )(CommentList);

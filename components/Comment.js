@@ -43,9 +43,22 @@ function Comment(props) {
                     </Text>
                     {currentUser && (
                         <TouchableOpacity
-                            onPress={() =>
-                                toggleEditMenu(comment.id, comment.body)
-                            }>
+                            onPress={() => {
+                                if (comment.parent_id) {
+                                    toggleEditMenu(
+                                        true,
+                                        comment.id,
+                                        comment.body,
+                                        comment.parent_id,
+                                    );
+                                } else {
+                                    toggleEditMenu(
+                                        true,
+                                        comment.id,
+                                        comment.body,
+                                    );
+                                }
+                            }}>
                             <View style={{flex: 0.1, alignSelf: "flex-start"}}>
                                 <FontAwesomeIcon icon={faEllipsisV} />
                             </View>
@@ -61,14 +74,16 @@ function Comment(props) {
                     <View style={{flexDirection: "row"}}>
                         <View style={{flexDirection: "row"}}>
                             <ReplyIcon style={styles.actionIcon} />
-                            <Text style={styles.commentText}>Reply</Text>
+                            <Text style={{fontSize: 14, color: "#535454"}}>
+                                Reply
+                            </Text>
                         </View>
                     </View>
                     <TimeAgo time={comment.created_at} style={styles.timeAgo} />
                     <View style={{flexDirection: "row"}}>
                         <TouchableNativeFeedback
                             onPress={() => {
-                                if (replyToReply) {
+                                if (comment.parent_id) {
                                     replyToReply(comment.user.name);
                                 } else {
                                     navigation.navigate("RepliesList", {
@@ -78,14 +93,18 @@ function Comment(props) {
                                     });
                                 }
                             }}>
-                            {!replyToReply && (
-                                <View style={{flexDirection: "row"}}>
-                                    <CommentIcon style={styles.actionIcon} />
-                                    <Text style={styles.commentText}>
+                            <View style={{flexDirection: "row"}}>
+                                <CommentIcon style={styles.actionIcon} />
+                                {comment.parent_id && (
+                                    <Text
+                                        style={{
+                                            fontSize: 14,
+                                            color: "#535454",
+                                        }}>
                                         {comment.replies_count}
                                     </Text>
-                                </View>
-                            )}
+                                )}
+                            </View>
                         </TouchableNativeFeedback>
                     </View>
                 </View>
@@ -116,6 +135,7 @@ const styles = StyleSheet.create({
         flex: 0.9,
         alignSelf: "stretch",
     },
+
     actionIcon: {
         width: 25,
         height: 25,

@@ -134,7 +134,7 @@ export const loadRootComments = (
     page,
 ) => dispatch => {
     if (page === null) return;
-    if (commentsCount > 0 && hasMoreItems) {
+    if (commentsCount > 0) {
         axios
             .get(
                 `https://dev.inspiringbangladesh.com/api/v1/stories/${storyId}/comments`,
@@ -152,6 +152,7 @@ export const loadRootComments = (
             )
             .then(response => {
                 if (response.data.comments) {
+                    console.log(response.data.comments);
                     dispatch({type: LOAD_COMMENTS, payload: response.data});
                 }
             })
@@ -234,7 +235,7 @@ export const deleteComment = (
     commentId,
     storyId,
     authToken,
-    isReply = false,
+    parentId = null,
 ) => dispatch => {
     axios
         .delete(
@@ -247,8 +248,8 @@ export const deleteComment = (
         )
         .then(() => {
             dispatch({type: DELETE_COMMENT, payload: commentId});
-            if (isReply) {
-                dispatch(updateReplyCount(commentId, "down"));
+            if (parentId !== null) {
+                dispatch(updateReplyCount(parentId, "down"));
             }
             dispatch(updateCommentCount(storyId, "down"));
         });
