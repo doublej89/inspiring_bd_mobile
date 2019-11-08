@@ -9,6 +9,8 @@ import {
     CLOSE_COMMENTS_MODAL,
     UPDATE_COMMENT,
     DELETE_COMMENT,
+    DELETE_REPLY,
+    UPDATE_REPLY,
 } from "../types";
 
 const initialState = {
@@ -64,6 +66,17 @@ export default function commentsReducer(state = initialState, action) {
             });
             return {...state, comments: updatedComments};
         }
+        case UPDATE_REPLY: {
+            let {comment} = action.payload;
+            const {replies} = state;
+            const updatedReplies = replies.map(el => {
+                if (el.id === comment.id) {
+                    return {...comment};
+                }
+                return el;
+            });
+            return {...state, replies: updatedReplies};
+        }
         case DELETE_COMMENT: {
             const commentId = action.payload;
             const {comments} = state;
@@ -71,6 +84,14 @@ export default function commentsReducer(state = initialState, action) {
                 comment => comment.id !== commentId,
             );
             return {...state, comments: updatedComments};
+        }
+        case DELETE_REPLY: {
+            const commentId = action.payload;
+            const {replies} = state;
+            const updatedReplies = replies.filter(
+                comment => comment.id !== commentId,
+            );
+            return {...state, replies: updatedReplies};
         }
         case CLOSE_COMMENTS_LIST: {
             return {

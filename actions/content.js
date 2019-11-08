@@ -18,6 +18,8 @@ import {
     DELETE_COMMENT,
     UPDATE_STORY,
     DELETE_STORY,
+    UPDATE_REPLY,
+    DELETE_REPLY,
 } from "../types";
 import axios from "axios";
 import {strim} from "../utils";
@@ -203,8 +205,10 @@ export const updateComment = (
     storyId,
     newCommentBody,
     authToken,
+    reply = false,
 ) => dispatch => {
     let commentContent = strim(newCommentBody);
+    console.log(commentContent);
     if (commentContent.length > 0) {
         axios
             .put(
@@ -218,8 +222,9 @@ export const updateComment = (
             )
             .then(response => {
                 if (response.data.comment) {
+                    console.log(response.data.comment);
                     dispatch({
-                        type: UPDATE_COMMENT,
+                        type: reply ? UPDATE_REPLY : UPDATE_COMMENT,
                         payload: response.data,
                     });
                 }
@@ -247,7 +252,10 @@ export const deleteComment = (
             },
         )
         .then(() => {
-            dispatch({type: DELETE_COMMENT, payload: commentId});
+            dispatch({
+                type: parentId === null ? DELETE_COMMENT : DELETE_REPLY,
+                payload: commentId,
+            });
             if (parentId !== null) {
                 dispatch(updateReplyCount(parentId, "down"));
             }

@@ -259,6 +259,8 @@ class CommentList extends Component {
                             this.setState({
                                 updateSelected: false,
                                 newCommentContent: "",
+                                selectedCommentId: null,
+                                selectedCommentBody: "",
                             });
                         }
                     }}
@@ -309,6 +311,7 @@ class CommentList extends Component {
                                                 );
                                                 this.setState({
                                                     isMenuVisible: false,
+                                                    selectedCommentId: null,
                                                 });
                                             },
                                         },

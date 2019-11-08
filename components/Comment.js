@@ -95,7 +95,7 @@ function Comment(props) {
                             }}>
                             <View style={{flexDirection: "row"}}>
                                 <CommentIcon style={styles.actionIcon} />
-                                {comment.parent_id && (
+                                {!comment.parent_id && (
                                     <Text
                                         style={{
                                             fontSize: 14,

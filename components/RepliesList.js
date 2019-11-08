@@ -6,6 +6,8 @@ import {
     Button,
     StyleSheet,
     TouchableOpacity,
+    Text,
+    Alert,
 } from "react-native";
 import {connect} from "react-redux";
 import {
@@ -47,11 +49,12 @@ class CommentList extends Component {
         this.handleCommentSubmission = this.handleCommentSubmission.bind(this);
         this.handleSubmitEditing = this.handleSubmitEditing.bind(this);
         this.replyToReply = this.replyToReply.bind(this);
+        this.toggleEditMenu = this.toggleEditMenu.bind(this);
     }
 
     componentDidMount() {
         const {navigation, loadReplies, authToken} = this.props;
-        let storyId = JSON.stringify(navigation.getParam("storyId", "NO-ID"));
+        let storyId = +JSON.stringify(navigation.getParam("storyId", "NO-ID"));
         let commentId = +JSON.stringify(
             navigation.getParam("commentId", "NO-ID"),
         );
@@ -62,8 +65,8 @@ class CommentList extends Component {
         loadReplies(storyId, commentId, authToken, repliesCount);
     }
 
-    componentDidUpdate(prevProps) {
-        let {repliesCount} = this.state;
+    componentDidUpdate(prevProps, prevState) {
+        let {repliesCount, updateSelected} = this.state;
         let currCommentsLength = this.props.replies.length;
         let prevCommentsLength = prevProps.replies.length;
         if (currCommentsLength > prevCommentsLength) {
@@ -71,6 +74,14 @@ class CommentList extends Component {
             repliesCount += diff;
             this.setState({repliesCount});
         }
+        // if (updateSelected !== prevState.updateSelected && updateSelected) {
+        //     this.setState(
+        //         {newReplyContent: this.state.selectedCommentBody},
+        //         () => {
+        //             this.replyField.current.focus();
+        //         },
+        //     );
+        // }
     }
 
     toggleEditMenu(
@@ -109,7 +120,7 @@ class CommentList extends Component {
 
     handleSubmitEditing(evt) {
         const {text} = evt.nativeEvent;
-        const {submitReply, authToken} = this.props;
+        const {submitReply, authToken, updateComment} = this.props;
         const {
             storyId,
             commentId,
@@ -133,7 +144,13 @@ class CommentList extends Component {
                     // isUpdateInputVisible: false,
                 },
                 () => {
-                    updateComment(selectedCommentId, storyId, text, authToken);
+                    updateComment(
+                        selectedCommentId,
+                        storyId,
+                        text,
+                        authToken,
+                        true,
+                    );
                 },
             );
         }
@@ -146,8 +163,15 @@ class CommentList extends Component {
     }
 
     render() {
-        const {replies, currentUserId} = this.props;
-        const {newReplyContent, selectedParentId} = this.state;
+        const {replies, currentUserId, authToken, deleteComment} = this.props;
+        const {
+            newReplyContent,
+            selectedCommentId,
+            selectedParentId,
+            isMenuVisible,
+            updateSelected,
+            storyId,
+        } = this.state;
         return (
             <View style={{flexDirection: "column", flex: 1}}>
                 <View style={{flex: 0.9}}>
@@ -191,6 +215,16 @@ class CommentList extends Component {
                     onSubmitEditing={this.handleSubmitEditing}
                     style={styles.textInputStyle}
                     value={newReplyContent}
+                    onBlur={() => {
+                        if (this.state.updateSelected) {
+                            this.setState({
+                                updateSelected: false,
+                                newReplyContent: "",
+                                selectedCommentId: null,
+                                selectedCommentBody: "",
+                            });
+                        }
+                    }}
                 />
                 <Modal
                     isVisible={isMenuVisible}
@@ -203,6 +237,16 @@ class CommentList extends Component {
                                 selectedCommentBody: "",
                                 selectedParentId: null,
                             });
+                        } else {
+                            this.setState(
+                                {
+                                    newReplyContent: this.state
+                                        .selectedCommentBody,
+                                },
+                                () => {
+                                    this.replyField.current.focus();
+                                },
+                            );
                         }
                     }}
                     style={styles.bottomModal}>
@@ -269,6 +313,21 @@ const styles = StyleSheet.create({
         marginTop: 12,
         flex: 0.1,
         alignSelf: "center",
+    },
+    container: {
+        justifyContent: "flex-end",
+        alignItems: "stretch",
+        backgroundColor: "white",
+        borderRadius: 4,
+    },
+    bottomModal: {
+        justifyContent: "flex-end",
+        margin: 0,
+    },
+    option: {
+        padding: 20,
+        height: 50,
+        borderBottomColor: "rgba(0, 0, 0, 0.4)",
     },
 });
 
