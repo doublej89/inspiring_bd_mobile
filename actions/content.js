@@ -51,7 +51,9 @@ export const submitStory = (
     const storyContent = strim(description);
     let formData = new FormData();
     formData.append("story[description]", storyContent);
-    formData.append("story[photos][]", file, file.name);
+    if (file !== null) {
+        formData.append("story[photos][]", file, file.name);
+    }
     const config = {
         headers: {
             Authorization: authToken,

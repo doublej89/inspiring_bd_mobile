@@ -8,6 +8,7 @@ import {
     TextInput,
     TouchableOpacity,
     Image,
+    Alert,
     Platform,
 } from "react-native";
 import Story from "./Story";
@@ -34,11 +35,17 @@ class UserStoryList extends Component {
             description: "",
             isModalVisible: false,
             photoSource: null,
+            updateSelected: false,
+            isMenuVisible: false,
+            selectedStoryId: null,
+            selectedStoryBody: "",
+            selectedStoryImageUri: null,
         };
 
         this.handleChoosePhoto = this.handleChoosePhoto.bind(this);
         this.handleStorySubmit = this.handleStorySubmit.bind(this);
         this.onModalToggle = this.onModalToggle.bind(this);
+        this.toggleEditMenu = this.toggleEditMenu.bind(this);
     }
 
     handleChoosePhoto() {
@@ -63,16 +70,24 @@ class UserStoryList extends Component {
             } else if (response.uri) {
                 this.setState({
                     photoSource: response,
+                    selectedStoryImageUri: null,
                 });
             }
         });
     }
 
     handleStorySubmit() {
-        const {photoSource, description} = this.state;
+        const {
+            photoSource,
+            description,
+            selectedStoryId,
+            updateSelected,
+        } = this.state;
         const {submitStory, authToken} = this.props;
+        let file = null;
+
         if (photoSource !== null) {
-            let file = {
+            file = {
                 name: photoSource.fileName,
                 type: photoSource.type,
                 uri:
@@ -80,15 +95,38 @@ class UserStoryList extends Component {
                         ? photoSource.uri
                         : photoSource.uri.replace("file://", ""),
             };
-            let storyDescription = description;
-            this.setState({description: ""}, () =>
-                submitStory(storyDescription, file, authToken),
-            );
         }
+        let storyDescription = description;
+
+        this.setState({description: "", isModalVisible: false}, () => {
+            if (!updateSelected) {
+                submitStory(storyDescription, file, authToken);
+            } else {
+                submitStory(storyDescription, file, authToken, selectedStoryId);
+            }
+        });
     }
 
     onModalToggle() {
         this.setState({isModalVisible: !this.state.isModalVisible});
+    }
+
+    toggleEditMenu(
+        visiblity,
+        storyId = null,
+        storyBody = "",
+        storyImageUri = null,
+    ) {
+        if (storyId === null || storyBody.length === 0) {
+            this.setState({isMenuVisible: visiblity});
+        } else {
+            this.setState({
+                isMenuVisible: visiblity,
+                selectedStoryId: storyId,
+                selectedStoryBody: storyBody,
+                selectedStoryImageUri: storyImageUri,
+            });
+        }
     }
 
     componentDidMount() {
@@ -97,88 +135,10 @@ class UserStoryList extends Component {
         this.props.loadItems(storiesPage);
     }
 
-    // componentDidUpdate(prevProps) {
-    //     const {
-    //         stories,
-    //         comments,
-    //         selectedStoryId,
-    //         loadRootComments,
-    //         hasMoreItems,
-    //         commentsPage,
-    //     } = this.props;
-
-    //     if (selectedStoryId !== null) {
-    //         let selectedStory;
-    //         if (this.state.selectedStory) {
-    //             selectedStory = this.state.selectedStory;
-    //             if (comments.length - prevProps.comments.length === 1) {
-    //                 selectedStory.comments_count += 1;
-    //                 this.setState({selectedStory: selectedStory});
-    //             }
-    //         } else {
-    //             selectedStory = stories.find(
-    //                 story => story.id === selectedStoryId,
-    //             );
-    //             this.setState({selectedStory: selectedStory});
-    //         }
-    //         if (comments === null) {
-    //             loadRootComments(
-    //                 selectedStoryId,
-    //                 selectedStory.comments_count,
-    //                 hasMoreItems,
-    //                 commentsPage,
-    //             );
-    //         }
-    //         this._panel.show();
-    //     } else {
-    //         if (this.state.selectedStory !== null) {
-    //             this.setState({selectedStory: null});
-    //         }
-    //     }
-    // }
-
     _handleRefresh = () => {
         this.props.refreshPage();
         this.props.loadItems(1);
     };
-
-    // _onGrant() {
-    //     this.setState({dragPanel: false});
-    //     return true;
-    // }
-
-    // _onRelease() {
-    //     this.setState({dragPanel: true});
-    // }
-
-    // handleCommentSubmission(evt) {
-    //     const {submitComment, authToken} = this.props;
-    //     const {newCommentContent, selectedStory} = this.state;
-    //     if (evt.nativeEvent.key === "Enter") {
-    //         this.setState({newCommentContent: ""}, () => {
-    //             submitComment(
-    //                 newCommentContent,
-    //                 selectedStory.id,
-    //                 selectedStory.comments_count,
-    //                 authToken,
-    //             );
-    //         });
-    //     }
-    // }
-
-    // handleSubmitEditing(evt) {
-    //     const {text} = evt.nativeEvent;
-    //     const {submitComment, authToken} = this.props;
-    //     const {selectedStory} = this.state;
-    //     this.setState({newCommentContent: ""}, () => {
-    //         submitComment(
-    //             text,
-    //             selectedStory.id,
-    //             selectedStory.comments_count,
-    //             authToken,
-    //         );
-    //     });
-    // }
 
     render() {
         const {
@@ -189,7 +149,13 @@ class UserStoryList extends Component {
             loading,
             navigation,
         } = this.props;
-        const {photoSource, description} = this.state;
+        const {
+            photoSource,
+            description,
+            selectedStoryImageUri,
+            updateSelected,
+            isMenuVisible,
+        } = this.state;
 
         return !loading ? (
             <View style={{flex: 1, padding: 15}}>
@@ -201,7 +167,11 @@ class UserStoryList extends Component {
                     <FlatList
                         data={stories}
                         renderItem={({item}) => (
-                            <Story story={item} navigation={navigation} />
+                            <Story
+                                story={item}
+                                navigation={navigation}
+                                toggleEditMenu={this.toggleEditMenu}
+                            />
                         )}
                         keyExtractor={item => item.id.toString()}
                         onEndReached={() => loadItems(storiesPage)}
@@ -212,32 +182,132 @@ class UserStoryList extends Component {
                         extraData={this.props}
                     />
                 </View>
-                {/* </View> */}
+
                 <Modal
                     isVisible={this.state.isModalVisible}
                     onBackdropPress={this.onModalToggle}
-                    hideModalContentWhileAnimating={true}>
-                    <View style={{flex: 1, backgroundColor: "#fff"}}>
-                        <TextInput
-                            placeholder="Create a story..."
-                            onChangeText={value =>
-                                this.setState({description: value})
-                            }
-                            value={description}
-                        />
-                        {photoSource && (
-                            <Image
-                                style={{width: 200, height: 200}}
-                                source={{uri: this.state.photoSource.uri}}
+                    hideModalContentWhileAnimating={true}
+                    onModalHide={() => {
+                        if (this.state.updateSelected) {
+                            this.setState({
+                                updateSelected: false,
+                                selectedStoryId: null,
+                                selectedStoryBody: "",
+                                selectedStoryImageUri: null,
+                            });
+                        }
+                    }}>
+                    <View
+                        style={{
+                            backgroundColor: "#fff",
+                            padding: 22,
+                            borderRadius: 5,
+                            justifyContent: "space-between",
+                        }}>
+                        <View style={{alignItems: "stretch"}}>
+                            <TextInput
+                                placeholder="Create a story..."
+                                onChangeText={value =>
+                                    this.setState({description: value})
+                                }
+                                value={description}
+                                style={{
+                                    height: 50,
+                                    padding: 10,
+                                    borderRadius: 5,
+                                    fontSize: 16,
+                                }}
                             />
-                        )}
-                        <TouchableOpacity onPress={this.handleChoosePhoto}>
-                            <PickerIcon style={{width: 50, height: 50}} />
-                        </TouchableOpacity>
+                            {photoSource && (
+                                <Image
+                                    style={{width: 300, height: 300}}
+                                    source={{uri: photoSource.uri}}
+                                />
+                            )}
+                            {selectedStoryImageUri && (
+                                <Image
+                                    style={{width: 300, height: 300}}
+                                    source={{uri: selectedStoryImageUri}}
+                                />
+                            )}
+                            <TouchableOpacity onPress={this.handleChoosePhoto}>
+                                <View style={{alignSelf: "flex-end"}}>
+                                    <PickerIcon
+                                        style={{width: 50, height: 50}}
+                                    />
+                                </View>
+                            </TouchableOpacity>
+                        </View>
+
                         <Button
                             title="Submit"
                             onPress={this.handleStorySubmit}
                         />
+                    </View>
+                </Modal>
+                <Modal
+                    isVisible={isMenuVisible}
+                    onSwipeComplete={() => this.toggleEditMenu(false)}
+                    swipeDirection={["down"]}
+                    onModalHide={() => {
+                        if (!updateSelected) {
+                            this.setState({
+                                selectedStoryId: null,
+                                selectedStoryBody: "",
+                                selectedStoryImageUri: null,
+                            });
+                        } else {
+                            this.setState({
+                                isModalVisible: true,
+                                description: selectedStoryBody,
+                            });
+                        }
+                    }}
+                    style={styles.bottomModal}>
+                    <View style={styles.container}>
+                        <TouchableOpacity
+                            onPress={() =>
+                                this.setState({
+                                    updateSelected: true,
+                                    isMenuVisible: false,
+                                })
+                            }>
+                            <View style={styles.option}>
+                                <Text style={{fontSize: 20}}>Update</Text>
+                            </View>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={() => {
+                                Alert.alert(
+                                    "Are you sure you wish to delete this item?",
+                                    null,
+                                    [
+                                        {
+                                            text: "Cancel",
+                                            onPress: () =>
+                                                console.log("Cancel Pressed"),
+                                        },
+                                        {
+                                            text: "OK",
+                                            onPress: () => {
+                                                deleteComment(
+                                                    selectedCommentId,
+                                                    storyId,
+                                                    authToken,
+                                                );
+                                                this.setState({
+                                                    isMenuVisible: false,
+                                                    selectedCommentId: null,
+                                                });
+                                            },
+                                        },
+                                    ],
+                                );
+                            }}>
+                            <View style={styles.option}>
+                                <Text style={{fontSize: 20}}>Delete</Text>
+                            </View>
+                        </TouchableOpacity>
                     </View>
                 </Modal>
             </View>
@@ -252,6 +322,7 @@ class UserStoryList extends Component {
 
 const mapStateToProps = state => ({
     authToken: state.auth.authToken,
+    currentUserId: state.auth.currentUserId,
     stories: state.content.stories,
     storiesPage: state.content.storiesPage,
     refreshing: state.content.refreshing,

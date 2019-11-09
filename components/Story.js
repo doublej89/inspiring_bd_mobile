@@ -13,12 +13,19 @@ import LovedIcon from "../assets/icons/loved.svg";
 import CommentIcon from "../assets/icons/comment.svg";
 import FollowIcon from "../assets/icons/follow.svg";
 import {FontAwesomeIcon} from "@fortawesome/react-native-fontawesome";
-import {faHeart} from "@fortawesome/free-solid-svg-icons";
+import {faHeart, faEllipsisV} from "@fortawesome/free-solid-svg-icons";
 import {handleInspired} from "../actions/content";
 import {connect} from "react-redux";
 
 function Story(props) {
-    let {story, navigation, handleInspired, currentUserId, authToken} = props;
+    let {
+        story,
+        navigation,
+        handleInspired,
+        currentUserId,
+        authToken,
+        toggleEditMenu,
+    } = props;
     let {user} = story;
 
     return (
@@ -59,9 +66,28 @@ function Story(props) {
                             </Text>
                         )}
                     </View>
-                    <FollowIcon
-                        style={{marginLeft: "auto", marginBottom: 15}}
-                    />
+                    {story.user.id !== currentUserId ? (
+                        <FollowIcon
+                            style={{marginLeft: "auto", marginBottom: 15}}
+                        />
+                    ) : (
+                        <View style={{flexDirection: "row"}}>
+                            <FollowIcon
+                                style={{marginLeft: "auto", marginBottom: 15}}
+                            />
+                            <TouchableOpacity
+                                onPress={() =>
+                                    toggleEditMenu(
+                                        true,
+                                        story.id,
+                                        story.description,
+                                        story.photos[0].url,
+                                    )
+                                }>
+                                <FontAwesomeIcon icon={faEllipsisV} />
+                            </TouchableOpacity>
+                        </View>
+                    )}
                 </View>
                 <TimeAgo
                     time={story.created_at}
