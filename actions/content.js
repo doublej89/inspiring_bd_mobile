@@ -78,7 +78,8 @@ export const submitStory = (
                 config,
             );
         } else {
-            request = axios.put(
+            console.log(formData);
+            request = axios.patch(
                 `https://dev.inspiringbangladesh.com/api/v1/stories/${storyId}`,
                 formData,
                 config,
@@ -86,6 +87,7 @@ export const submitStory = (
         }
         request.then(response => {
             if (response.data.story) {
+                console.log(response.data.story);
                 dispatch({
                     type: storyId === null ? SUBMIT_STORY : UPDATE_STORY,
                     payload: response.data.story,

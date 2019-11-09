@@ -9,7 +9,9 @@ import {
     TouchableOpacity,
     Image,
     Alert,
+    StyleSheet,
     Platform,
+    Text,
 } from "react-native";
 import Story from "./Story";
 import StoryForm from "./StoryForm";
@@ -98,13 +100,22 @@ class UserStoryList extends Component {
         }
         let storyDescription = description;
 
-        this.setState({description: "", isModalVisible: false}, () => {
-            if (!updateSelected) {
-                submitStory(storyDescription, file, authToken);
-            } else {
-                submitStory(storyDescription, file, authToken, selectedStoryId);
-            }
-        });
+        this.setState(
+            {description: "", photoSource: null, isModalVisible: false},
+            () => {
+                if (!updateSelected) {
+                    submitStory(storyDescription, file, authToken);
+                } else {
+                    console.log(file);
+                    submitStory(
+                        storyDescription,
+                        file,
+                        authToken,
+                        selectedStoryId,
+                    );
+                }
+            },
+        );
     }
 
     onModalToggle() {
@@ -155,6 +166,7 @@ class UserStoryList extends Component {
             selectedStoryImageUri,
             updateSelected,
             isMenuVisible,
+            selectedStoryBody,
         } = this.state;
 
         return !loading ? (
@@ -319,6 +331,34 @@ class UserStoryList extends Component {
         );
     }
 }
+
+const styles = StyleSheet.create({
+    textInputStyle: {
+        alignSelf: "center",
+        height: 60,
+        width: "90%",
+        borderWidth: 1,
+        borderColor: "#4CAF50",
+        borderRadius: 20,
+        marginTop: 12,
+        flex: 0.1,
+    },
+    container: {
+        justifyContent: "flex-end",
+        alignItems: "stretch",
+        backgroundColor: "white",
+        borderRadius: 4,
+    },
+    bottomModal: {
+        justifyContent: "flex-end",
+        margin: 0,
+    },
+    option: {
+        padding: 20,
+        height: 50,
+        borderBottomColor: "rgba(0, 0, 0, 0.4)",
+    },
+});
 
 const mapStateToProps = state => ({
     authToken: state.auth.authToken,
