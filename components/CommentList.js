@@ -61,6 +61,9 @@ class CommentList extends Component {
         let commentCount = +JSON.stringify(
             navigation.getParam("commentsCount", "0"),
         );
+        let writeComment = JSON.stringify(
+            navigation.getParam("writeComment", "NO"),
+        );
         console.log("Comment count comment " + storyId + ": " + commentCount);
         this.setState({storyId, commentCount});
         loadRootComments(
@@ -70,6 +73,9 @@ class CommentList extends Component {
             hasMoreItems,
             commentsPage,
         );
+        if (writeComment === "yes") {
+            this._textInput.focus();
+        }
     }
 
     componentDidUpdate(prevProps, prevState) {

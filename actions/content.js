@@ -97,9 +97,16 @@ export const submitStory = (
     }
 };
 
-export const deleteStory = storyId => dispatch => {
+export const deleteStory = (storyId, authToken) => dispatch => {
     axios
-        .delete(`https://dev.inspiringbangladesh.com/api/v1/stories/${storyId}`)
+        .delete(
+            `https://dev.inspiringbangladesh.com/api/v1/stories/${storyId}`,
+            {
+                headers: {
+                    Authorization: authToken,
+                },
+            },
+        )
         .then(() => dispatch({type: DELETE_STORY, payload: storyId}));
 };
 

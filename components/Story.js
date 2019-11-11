@@ -12,6 +12,8 @@ import {cleanHtml} from "../utils";
 import LovedIcon from "../assets/icons/loved.svg";
 import CommentIcon from "../assets/icons/comment.svg";
 import FollowIcon from "../assets/icons/follow.svg";
+import HeartIcon from "../assets/icons/love.svg";
+import ReplyIcon from "../assets/icons/reply.svg";
 import {FontAwesomeIcon} from "@fortawesome/react-native-fontawesome";
 import {faHeart, faEllipsisV} from "@fortawesome/free-solid-svg-icons";
 import {handleInspired} from "../actions/content";
@@ -31,9 +33,11 @@ function Story(props) {
     return (
         <View style={styles.postContainer}>
             <View style={styles.postCard}>
-                {story && story.photos[0] && (
+                {story && story.photos[story.photos.length - 1] && (
                     <Image
-                        source={{uri: story.photos[0].url}}
+                        source={{
+                            uri: story.photos[story.photos.length - 1].url,
+                        }}
                         style={styles.cardImgTop}
                     />
                 )}
@@ -76,14 +80,24 @@ function Story(props) {
                                 style={{marginLeft: "auto", marginBottom: 15}}
                             />
                             <TouchableOpacity
-                                onPress={() =>
-                                    toggleEditMenu(
-                                        true,
-                                        story.id,
-                                        story.description,
-                                        story.photos[0].url,
-                                    )
-                                }>
+                                onPress={() => {
+                                    if (story.photos.length > 0) {
+                                        toggleEditMenu(
+                                            true,
+                                            story.id,
+                                            story.description,
+                                            story.photos[
+                                                story.photos.length - 1
+                                            ].url,
+                                        );
+                                    } else {
+                                        toggleEditMenu(
+                                            true,
+                                            story.id,
+                                            story.description,
+                                        );
+                                    }
+                                }}>
                                 <FontAwesomeIcon icon={faEllipsisV} />
                             </TouchableOpacity>
                         </View>
@@ -106,6 +120,7 @@ function Story(props) {
                         navigation.navigate("CommentsList", {
                             storyId: story.id,
                             commentsCount: story.comments_count,
+                            writeComment: "no",
                         });
                     }}>
                     <View style={styles.singlePostStat}>
@@ -122,19 +137,20 @@ function Story(props) {
                         backgroundColor: "#D8D8D8",
                         height: 1,
                     }}></View>
-                <TouchableOpacity
-                    onPress={() =>
-                        handleInspired(story.id, currentUserId, authToken)
-                    }>
-                    <View
-                        style={{
-                            flexDirection: "row",
-                            paddingHorizontal: 15,
-                            paddingBottom: 15,
-                            paddingTop: 0,
-                            marginTop: 15,
-                        }}>
-                        <FontAwesomeIcon
+                <View
+                    style={{
+                        flexDirection: "row",
+                        justifyContent: "space-around",
+                    }}>
+                    <TouchableOpacity
+                        onPress={() =>
+                            handleInspired(story.id, currentUserId, authToken)
+                        }>
+                        <View
+                            style={{
+                                flexDirection: "row",
+                            }}>
+                            {/* <FontAwesomeIcon
                             icon={faHeart}
                             style={{
                                 marginTop: 10,
@@ -144,9 +160,39 @@ function Story(props) {
                                 width: 30,
                                 height: 30,
                             }}
-                        />
-                    </View>
-                </TouchableOpacity>
+                        /> */}
+                            <HeartIcon style={{height: 25, width: 25}} />
+                            <Text style={{fontSize: 16}}>Love</Text>
+                        </View>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => {
+                            navigation.navigate("CommentsList", {
+                                storyId: story.id,
+                                commentsCount: story.comments_count,
+                                writeComment: "yes",
+                            });
+                        }}>
+                        <View
+                            style={{
+                                flexDirection: "row",
+                            }}>
+                            {/* <FontAwesomeIcon
+                            icon={faHeart}
+                            style={{
+                                marginTop: 10,
+                                marginBottom: 10,
+                                marginRight: 10,
+                                marginLeft: 10,
+                                width: 30,
+                                height: 30,
+                            }}
+                        /> */}
+                            <ReplyIcon style={{height: 25, width: 25}} />
+                            <Text style={{fontSize: 16}}>Reply</Text>
+                        </View>
+                    </TouchableOpacity>
+                </View>
             </View>
         </View>
     );

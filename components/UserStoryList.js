@@ -16,7 +16,12 @@ import {
 import Story from "./Story";
 import StoryForm from "./StoryForm";
 import LogoutButton from "./LogoutButton";
-import {loadItems, refreshPage, submitStory} from "../actions/content";
+import {
+    loadItems,
+    refreshPage,
+    submitStory,
+    deleteStory,
+} from "../actions/content";
 import {logout} from "../actions/auth";
 import LogoTitle from "./LogoTitle";
 import Modal from "react-native-modal";
@@ -118,8 +123,8 @@ class UserStoryList extends Component {
         );
     }
 
-    onModalToggle() {
-        this.setState({isModalVisible: !this.state.isModalVisible});
+    onModalToggle(visiblity) {
+        this.setState({isModalVisible: visiblity});
     }
 
     toggleEditMenu(
@@ -159,6 +164,8 @@ class UserStoryList extends Component {
             refreshing,
             loading,
             navigation,
+            authToken,
+            deleteStory,
         } = this.props;
         const {
             photoSource,
@@ -197,9 +204,12 @@ class UserStoryList extends Component {
 
                 <Modal
                     isVisible={this.state.isModalVisible}
-                    onBackdropPress={this.onModalToggle}
+                    onBackdropPress={() => this.onModalToggle(false)}
                     hideModalContentWhileAnimating={true}
                     onModalHide={() => {
+                        if (photoSource) {
+                            this.setState({photoSource: null});
+                        }
                         if (this.state.updateSelected) {
                             this.setState({
                                 updateSelected: false,
@@ -227,28 +237,48 @@ class UserStoryList extends Component {
                                     height: 50,
                                     padding: 10,
                                     borderRadius: 5,
-                                    fontSize: 16,
+                                    fontSize: 20,
                                 }}
                             />
-                            {photoSource && (
-                                <Image
-                                    style={{width: 300, height: 300}}
-                                    source={{uri: photoSource.uri}}
-                                />
-                            )}
-                            {selectedStoryImageUri && (
-                                <Image
-                                    style={{width: 300, height: 300}}
-                                    source={{uri: selectedStoryImageUri}}
-                                />
-                            )}
-                            <TouchableOpacity onPress={this.handleChoosePhoto}>
-                                <View style={{alignSelf: "flex-end"}}>
-                                    <PickerIcon
-                                        style={{width: 50, height: 50}}
-                                    />
+                            {photoSource || selectedStoryImageUri ? (
+                                <View
+                                    style={{
+                                        flexDirection: "row",
+                                        justifyContent: "space-between",
+                                    }}>
+                                    {photoSource && (
+                                        <Image
+                                            style={{width: 160, height: 160}}
+                                            source={{uri: photoSource.uri}}
+                                        />
+                                    )}
+                                    {selectedStoryImageUri && (
+                                        <Image
+                                            style={{width: 160, height: 160}}
+                                            source={{
+                                                uri: selectedStoryImageUri,
+                                            }}
+                                        />
+                                    )}
+                                    <TouchableOpacity
+                                        onPress={this.handleChoosePhoto}>
+                                        <View>
+                                            <PickerIcon
+                                                style={{width: 50, height: 50}}
+                                            />
+                                        </View>
+                                    </TouchableOpacity>
                                 </View>
-                            </TouchableOpacity>
+                            ) : (
+                                <TouchableOpacity
+                                    onPress={this.handleChoosePhoto}>
+                                    <View style={{alignSelf: "flex-end"}}>
+                                        <PickerIcon
+                                            style={{width: 50, height: 50}}
+                                        />
+                                    </View>
+                                </TouchableOpacity>
+                            )}
                         </View>
 
                         <Button
@@ -275,6 +305,7 @@ class UserStoryList extends Component {
                             });
                         }
                     }}
+                    onBackdropPress={() => this.toggleEditMenu(false)}
                     style={styles.bottomModal}>
                     <View style={styles.container}>
                         <TouchableOpacity
@@ -302,14 +333,15 @@ class UserStoryList extends Component {
                                         {
                                             text: "OK",
                                             onPress: () => {
-                                                deleteComment(
-                                                    selectedCommentId,
-                                                    storyId,
+                                                deleteStory(
+                                                    selectedStoryId,
                                                     authToken,
                                                 );
                                                 this.setState({
                                                     isMenuVisible: false,
-                                                    selectedCommentId: null,
+                                                    selectedStoryId: null,
+                                                    selectedStoryBody: "",
+                                                    selectedStoryImageUri: null,
                                                 });
                                             },
                                         },
@@ -370,5 +402,5 @@ const mapStateToProps = state => ({
 
 export default connect(
     mapStateToProps,
-    {loadItems, refreshPage, logout, submitStory},
+    {loadItems, refreshPage, logout, submitStory, deleteStory},
 )(UserStoryList);
