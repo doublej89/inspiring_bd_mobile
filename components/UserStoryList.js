@@ -177,7 +177,7 @@ class UserStoryList extends Component {
         } = this.state;
 
         return !loading ? (
-            <View style={{flex: 1, padding: 15}}>
+            <View style={{flex: 1, padding: 15, backgroundColor: "#F8F9FF"}}>
                 {/* <View style={{flex: 1}}> */}
                 <View style={{flex: 0.1, marginBottom: 10}}>
                     <StoryForm activateModal={this.onModalToggle} />

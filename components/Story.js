@@ -161,7 +161,7 @@ function Story(props) {
                                 height: 30,
                             }}
                         /> */}
-                            <HeartIcon style={{height: 25, width: 25}} />
+                            <HeartIcon style={{height: 14, width: 14}} />
                             <Text style={{fontSize: 16}}>Love</Text>
                         </View>
                     </TouchableOpacity>
@@ -208,17 +208,19 @@ const styles = StyleSheet.create({
     postCard: {
         width: 400,
         height: 250,
+        borderRadius: 10,
     },
     cardImgTop: {
         width: "100%",
         height: "100%",
-        borderTopLeftRadius: 9,
-        borderTopRightRadius: 9,
+        borderTopLeftRadius: 10,
+        borderTopRightRadius: 10,
     },
     singlePostContent: {
         paddingHorizontal: 15,
         paddingVertical: 15,
         color: "#4E4B4B",
+        backgroundColor: "#fff",
     },
     singlePostUser: {
         flexDirection: "row",

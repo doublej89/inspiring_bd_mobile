@@ -10,6 +10,10 @@ import React, {Component} from "react";
 import {Easing, Animated} from "react-native";
 import {createAppContainer, createSwitchNavigator} from "react-navigation";
 import {createStackNavigator} from "react-navigation-stack";
+import {
+    createBottomTabNavigator,
+    createMaterialTopTabNavigator,
+} from "react-navigation-tabs";
 import {createDismissableStackNavigator} from "./createDismissableStackNavigator";
 import HomeScreen from "./components/UserStoryList";
 import RegisterScreen from "./components/Register";
@@ -17,30 +21,54 @@ import LoginScreen from "./components/Login";
 import ProfileScreen from "./components/Profile";
 import CommentScreen from "./components/CommentList";
 import RepliesScreen from "./components/RepliesList";
+import TabBar from "./components/TabBar";
 import AuthLoadingScreen from "./AuthLoadingScreen";
 import {createStore, applyMiddleware} from "redux";
 import {Provider} from "react-redux";
 import thunk from "redux-thunk";
 import reducers from "./reducers";
+import {FontAwesomeIcon} from "@fortawesome/react-native-fontawesome";
+import {faHome, faUserCog} from "@fortawesome/free-solid-svg-icons";
 
 const store = createStore(reducers, applyMiddleware(thunk));
 
-const MainStack = createStackNavigator(
+const getTabBarIcon = (navigation, focused, tintColor) => {
+    const {routeName} = navigation.state;
+    let iconName;
+    if (routeName === "Home") {
+        iconName = faHome;
+    } else if (routeName === "Profile") {
+        iconName = faUserCog;
+    }
+    // You can return any component that you like here!
+    return <FontAwesomeIcon icon={iconName} size={25} color={tintColor} />;
+};
+
+const MainStack = createMaterialTopTabNavigator(
     {
         Home: HomeScreen,
         Profile: ProfileScreen,
     },
     {
-        defaultNavigationOptions: {
-            headerTintColor: "#fff",
-            headerStyle: {
-                backgroundColor: "#f4511e",
-                color: "#fff",
-            },
-            headerTitleStyle: {
-                fontWeight: "bold",
-            },
-        },
+        // defaultNavigationOptions: {
+        //     headerTintColor: "#61A2FF",
+        //     headerStyle: {
+        //         backgroundColor: "#fff",
+        //         color: "#61A2FF",
+        //     },
+        //     headerTitleStyle: {
+        //         fontWeight: "bold",
+        //     },
+        // },
+        // defaultNavigationOptions: ({navigation}) => ({
+        //     tabBarIcon: ({focused, tintColor}) =>
+        //         getTabBarIcon(navigation, focused, tintColor),
+        // }),
+        // tabBarOptions: {
+        //     activeTintColor: "blue",
+        //     inactiveTintColor: "gray",
+        // },
+        tabBarComponent: TabBar,
     },
 );
 
@@ -90,10 +118,18 @@ const AppStack = createStackNavigator(
     },
 );
 
-const AuthStack = createStackNavigator({
-    Login: LoginScreen,
-    Register: RegisterScreen,
-});
+const AuthStack = createStackNavigator(
+    {
+        Login: LoginScreen,
+        Register: RegisterScreen,
+    },
+    {
+        headerMode: "none",
+        navigationOptions: {
+            headerVisible: false,
+        },
+    },
+);
 
 const AppContainer = createAppContainer(
     createSwitchNavigator(
