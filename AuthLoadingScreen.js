@@ -18,19 +18,25 @@ class AuthLoadingScreen extends React.Component {
     // Fetch the token from storage then navigate to our appropriate place
     _bootstrapAsync = async () => {
         const authToken = await AsyncStorage.getItem("authToken");
+        let isExpired = false;
         if (authToken) {
             const decoded = decode(authToken);
-            this.props.dispatch({
-                type: USER_AUTHENTICATED,
-                payload: {
-                    authToken,
-                    currentUserId: decoded.user_id,
-                },
-            });
+            let expTime = +decoded.exp;
+            let currTime = new Date().getTime();
+            if (currTime > expTime * 1000) isExpired = true;
+            else {
+                this.props.dispatch({
+                    type: USER_AUTHENTICATED,
+                    payload: {
+                        authToken,
+                        currentUserId: decoded.user_id,
+                    },
+                });
+            }
         }
         // This will switch to the App screen or Auth screen and this loading
         // screen will be unmounted and thrown away.
-        this.props.navigation.navigate(authToken ? "App" : "Auth");
+        this.props.navigation.navigate(!isExpired ? "App" : "Auth");
     };
 
     // Render any loading content that you like here

@@ -20,6 +20,7 @@ import {
     DELETE_STORY,
     UPDATE_REPLY,
     DELETE_REPLY,
+    FETCH_USER,
 } from "../types";
 import axios from "axios";
 import {strim} from "../utils";
@@ -371,5 +372,23 @@ export const closeRepliesList = () => ({
 export const closeCommentsModal = () => ({
     type: CLOSE_COMMENTS_MODAL,
 });
+
+export const fetchUser = (userId, authToken) => dispatch => {
+    axios
+        .get(`https://dev.inspiringbangladesh.com/api/v1/users/${userId}`, {
+            headers: {
+                Authorization: authToken,
+            },
+        })
+        .then(response => {
+            if (response.data.user) {
+                dispatch({type: FETCH_USER, payload: response.data.user});
+            }
+        })
+        .catch(err => {
+            console.log("Failed to fetch user!");
+            console.log(err);
+        });
+};
 
 export const refreshPage = () => ({type: REFRESH_PAGE});
