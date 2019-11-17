@@ -5,8 +5,10 @@ import {
     StyleSheet,
     ScrollView,
     ActivityIndicator,
+    Image,
+    Button,
 } from "react-native";
-import {fetchUser} from "../actions/content";
+import {fetchUser, uploadProfilePhoto} from "../actions/content";
 import {connect} from "react-redux";
 import ImagePicker from "react-native-image-picker";
 
@@ -14,15 +16,28 @@ class Profile extends Component {
     constructor() {
         super();
         this.state = {
+            userId: null,
+            currentUserId: null,
             avatarPhotoSource: null,
             coverPhotoSource: null,
         };
+        this.handleChooseAvatarPhoto = this.handleChooseAvatarPhoto.bind(this);
+        this.handleChooseCoverPhoto = this.handleChooseCoverPhoto.bind(this);
     }
+
     componentDidMount() {
         const {navigation, fetchUser, authToken, currentUserId} = this.props;
         let userId = +JSON.stringify(navigation.getParam("userId", "NO-ID"));
-        if (userId) fetchUser(userId, authToken);
-        else fetchUser(currentUserId, authToken);
+        if (userId) {
+            this.setState({userId: userId, currentUserId: currentUserId}, () =>
+                fetchUser(userId, authToken),
+            );
+        } else {
+            this.setState(
+                {userId: currentUserId, currentUserId: currentUserId},
+                () => fetchUser(currentUserId, authToken),
+            );
+        }
     }
 
     handleChooseCoverPhoto() {
@@ -48,13 +63,23 @@ class Profile extends Component {
                 this.setState({
                     coverPhotoSource: response,
                 });
+                let file = {
+                    name: response.fileName,
+                    type: response.type,
+                    uri:
+                        Platform.OS === "android"
+                            ? response.uri
+                            : response.uri.replace("file://", ""),
+                };
+                uploadProfilePhoto(currentUserId, authToken, null, file);
             }
         });
     }
 
     handleChooseAvatarPhoto() {
+        const {authToken, currentUserId} = this.props;
         const options = {
-            title: "Upload cover photo",
+            title: "Upload avatar",
             noData: true,
             takePhotoButtonTitle: "Take photo with your camera",
             chooseFromLibraryButtonTitle: "Choose photo from library",
@@ -75,11 +100,21 @@ class Profile extends Component {
                 this.setState({
                     avatarPhotoSource: response,
                 });
+                let file = {
+                    name: response.fileName,
+                    type: response.type,
+                    uri:
+                        Platform.OS === "android"
+                            ? response.uri
+                            : response.uri.replace("file://", ""),
+                };
+                uploadProfilePhoto(currentUserId, authToken, file);
             }
         });
     }
 
     render() {
+        const {userId, currentUserId} = this.state;
         const {user} = this.props;
         return user ? (
             <View style={{flex: 1, backgroundColor: "#F8F9FF"}}>
@@ -107,7 +142,15 @@ class Profile extends Component {
                                 position: "absolute",
                                 left: 12,
                                 bottom: 100,
-                            }}></View>
+                            }}>
+                            <Image style={{width: "100%", height: "100%"}} />
+                            {userId === currentUserId && (
+                                <Button
+                                    onPress={this.handleChooseAvatarPhoto}
+                                    style={{height: 60}}
+                                />
+                            )}
+                        </View>
                     </View>
                 </ScrollView>
             </View>
@@ -136,4 +179,6 @@ const mapStateToProps = state => ({
     user: state.profile.user,
 });
 
-export default connect(mapStateToProps, {fetchUser})(Profile);
+export default connect(mapStateToProps, {fetchUser, uploadProfilePhoto})(
+    Profile,
+);

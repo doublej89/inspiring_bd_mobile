@@ -391,4 +391,44 @@ export const fetchUser = (userId, authToken) => dispatch => {
         });
 };
 
+export const uploadProfilePhoto = (
+    userId,
+    authToken,
+    avatar = null,
+    coverPhoto = null,
+) => dispatch => {
+    let formData = new FormData();
+    if (avatar) formData.append("user[avatar]", avatar);
+    if (coverPhoto) formData.append("user[cover_photo]", coverPhoto);
+    axios
+        .patch(
+            `https://dev.inspiringbangladesh.com/api/v1/users/${userId}`,
+            formData,
+            {
+                headers: {
+                    Authorization: authToken,
+                    "Content-Type": "multipart/form-data",
+                },
+                onUploadProgress: function(progressEvent) {
+                    let percentCompleted = Math.round(
+                        (progressEvent.loaded * 100) / progressEvent.total,
+                    );
+                    dispatch({
+                        type: UPLOAD_PROGRESS,
+                        payload: percentCompleted,
+                    });
+                },
+            },
+        )
+        .then(response => {
+            if (response.data.user) {
+                dispatch({type: FETCH_USER, payload: response.data.user});
+            }
+        })
+        .catch(err => {
+            console.log("Failed to fetch user!");
+            console.log(err);
+        });
+};
+
 export const refreshPage = () => ({type: REFRESH_PAGE});

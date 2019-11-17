@@ -23,3 +23,4 @@ export const UPDATE_REPLY_COUNT = "update_reply_count";
 export const INSPIRE_STORY = "inspire_story";
 export const UPLOAD_PROGRESS = "upload_progress";
 export const FETCH_USER = "fetch_user";
+export const UPLOAD_PHOTO = "upload_photo";
