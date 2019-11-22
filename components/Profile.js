@@ -7,17 +7,17 @@ import {
     ActivityIndicator,
     Image,
     Button,
+    TouchableOpacity,
 } from "react-native";
 import {fetchUser, uploadProfilePhoto} from "../actions/content";
 import {connect} from "react-redux";
 import ImagePicker from "react-native-image-picker";
 
 class Profile extends Component {
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         this.state = {
             userId: null,
-            currentUserId: null,
             avatarPhotoSource: null,
             coverPhotoSource: null,
         };
@@ -29,18 +29,16 @@ class Profile extends Component {
         const {navigation, fetchUser, authToken, currentUserId} = this.props;
         let userId = +JSON.stringify(navigation.getParam("userId", "NO-ID"));
         if (userId) {
-            this.setState({userId: userId, currentUserId: currentUserId}, () =>
-                fetchUser(userId, authToken),
-            );
+            this.setState({userId: userId}, () => fetchUser(userId, authToken));
         } else {
-            this.setState(
-                {userId: currentUserId, currentUserId: currentUserId},
-                () => fetchUser(currentUserId, authToken),
+            this.setState({userId: currentUserId}, () =>
+                fetchUser(currentUserId, authToken),
             );
         }
     }
 
     handleChooseCoverPhoto() {
+        const {authToken, currentUserId, uploadProfilePhoto} = this.props;
         const options = {
             title: "Upload cover photo",
             noData: true,
@@ -77,7 +75,7 @@ class Profile extends Component {
     }
 
     handleChooseAvatarPhoto() {
-        const {authToken, currentUserId} = this.props;
+        const {authToken, currentUserId, uploadProfilePhoto} = this.props;
         const options = {
             title: "Upload avatar",
             noData: true,
@@ -114,46 +112,71 @@ class Profile extends Component {
     }
 
     render() {
-        const {userId, currentUserId} = this.state;
-        const {user} = this.props;
+        const {userId} = this.state;
+        const {user, currentUserId} = this.props;
         return user ? (
-            <View style={{flex: 1, backgroundColor: "#F8F9FF"}}>
-                <ScrollView style={{padding: 20}}>
-                    <View style={styles.profileHeader}>
-                        <View
-                            style={{
-                                flex: 0.7,
-                                backgroundColor: "pink",
-                                borderTopStartRadius: 10,
-                                borderTopEndRadius: 10,
-                            }}></View>
-                        <View
-                            style={{
-                                flex: 0.3,
-                                backgroundColor: "white",
-                                borderBottomStartRadius: 10,
-                                borderBottomEndRadius: 10,
-                            }}></View>
-                        <View
-                            style={{
-                                height: 120,
-                                width: 120,
-                                backgroundColor: "gray",
-                                position: "absolute",
-                                left: 12,
-                                bottom: 100,
-                            }}>
-                            <Image style={{width: "100%", height: "100%"}} />
-                            {userId === currentUserId && (
-                                <Button
-                                    onPress={this.handleChooseAvatarPhoto}
-                                    style={{height: 60}}
-                                />
-                            )}
-                        </View>
+            <ScrollView
+                style={{padding: 20, flex: 1, backgroundColor: "#F8F9FF"}}>
+                <View style={styles.profileHeader}>
+                    <View
+                        style={{
+                            flex: 0.7,
+                            backgroundColor: "pink",
+                            borderTopStartRadius: 10,
+                            borderTopEndRadius: 10,
+                        }}>
+                        <TouchableOpacity onPress={this.handleChooseCoverPhoto}>
+                            <Image
+                                source={{uri: user.cover_photo_url}}
+                                style={{width: "100%", height: "100%"}}
+                            />
+                        </TouchableOpacity>
                     </View>
-                </ScrollView>
-            </View>
+                    <View
+                        style={{
+                            flex: 0.3,
+                            backgroundColor: "white",
+                            borderBottomStartRadius: 10,
+                            borderBottomEndRadius: 10,
+                        }}></View>
+                </View>
+                <View
+                    style={{
+                        height: 120,
+                        width: 120,
+                        backgroundColor: "gray",
+                        position: "absolute",
+                        left: 12,
+                        bottom: 100,
+                        zIndex: 5,
+                    }}>
+                    {userId === currentUserId ? (
+                        <TouchableOpacity
+                            onPress={this.handleChooseAvatarPhoto}>
+                            <Image
+                                source={{uri: user.avatar_url}}
+                                style={{width: "100%", height: "100%"}}
+                            />
+                            {/* <View
+                                style={{
+                                    height: 40,
+                                    backgroundColor: "red",
+                                    borderRadius: 20,
+                                }}></View> */}
+                        </TouchableOpacity>
+                    ) : (
+                        // <Button
+                        //     onPress={this.handleChooseAvatarPhoto}
+                        //     style={{height: 60}}
+                        //     title="change"
+                        // />
+                        <Image
+                            source={{uri: user.avatar_url}}
+                            style={{width: "100%", height: "100%"}}
+                        />
+                    )}
+                </View>
+            </ScrollView>
         ) : (
             <View>
                 <Text style={{alignSelf: "center"}}>
