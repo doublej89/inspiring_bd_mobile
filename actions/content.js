@@ -21,6 +21,7 @@ import {
     UPDATE_REPLY,
     DELETE_REPLY,
     FETCH_USER,
+    FOLLOW,
 } from "../types";
 import axios from "axios";
 import {strim} from "../utils";
@@ -373,16 +374,21 @@ export const closeCommentsModal = () => ({
     type: CLOSE_COMMENTS_MODAL,
 });
 
-export const fetchUser = (userId, authToken) => dispatch => {
+export const fetchUser = (userId, authToken, currUserId = null) => dispatch => {
+    const config = {
+        headers: {
+            Authorization: authToken,
+        },
+    };
+    if (currUserId !== null) config[params] = {curr_user_id: currUserId};
     axios
-        .get(`https://dev.inspiringbangladesh.com/api/v1/users/${userId}`, {
-            headers: {
-                Authorization: authToken,
-            },
-        })
+        .get(
+            `https://dev.inspiringbangladesh.com/api/v1/users/${userId}`,
+            config,
+        )
         .then(response => {
-            if (response.data.user) {
-                dispatch({type: FETCH_USER, payload: response.data.user});
+            if (response.data) {
+                dispatch({type: FETCH_USER, payload: response.data});
             }
         })
         .catch(err => {
@@ -428,6 +434,38 @@ export const uploadProfilePhoto = (
         .catch(err => {
             console.log("Failed to fetch user!");
             console.log(err);
+        });
+};
+
+export const follow = (userId, authToken) => dispatch => {
+    axios
+        .put(
+            `https://dev.inspiringbangladesh.com/api/v1/users/${userId}/follow`,
+            null,
+            {
+                headers: {
+                    Authorization: authToken,
+                },
+            },
+        )
+        .then(response => {
+            dispatch({type: FOLLOW, payload: response.data.following});
+        });
+};
+
+export const unfollow = (userId, authToken) => dispatch => {
+    axios
+        .put(
+            `https://dev.inspiringbangladesh.com/api/v1/users/${userId}/unfollow`,
+            null,
+            {
+                headers: {
+                    Authorization: authToken,
+                },
+            },
+        )
+        .then(response => {
+            dispatch({type: FOLLOW, payload: response.data.following});
         });
 };
 

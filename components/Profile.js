@@ -9,7 +9,12 @@ import {
     Button,
     TouchableOpacity,
 } from "react-native";
-import {fetchUser, uploadProfilePhoto} from "../actions/content";
+import {
+    fetchUser,
+    uploadProfilePhoto,
+    follow,
+    unfollow,
+} from "../actions/content";
 import {connect} from "react-redux";
 import ImagePicker from "react-native-image-picker";
 
@@ -29,7 +34,9 @@ class Profile extends Component {
         const {navigation, fetchUser, authToken, currentUserId} = this.props;
         let userId = +JSON.stringify(navigation.getParam("userId", "NO-ID"));
         if (userId) {
-            this.setState({userId: userId}, () => fetchUser(userId, authToken));
+            this.setState({userId: userId}, () =>
+                fetchUser(userId, authToken, currentUserId),
+            );
         } else {
             this.setState({userId: currentUserId}, () =>
                 fetchUser(currentUserId, authToken),
@@ -111,70 +118,114 @@ class Profile extends Component {
         });
     }
 
+    currentUserCanFollow() {
+        return (
+            !this.props.currentUserFollowing &&
+            this.props.currentUserId !== this.state.userId
+        );
+    }
+
     render() {
         const {userId} = this.state;
-        const {user, currentUserId} = this.props;
+        const {user, currentUserId, follow} = this.props;
         return user ? (
             <ScrollView
                 style={{padding: 20, flex: 1, backgroundColor: "#F8F9FF"}}>
                 <View style={styles.profileHeader}>
                     <View
                         style={{
-                            flex: 0.7,
+                            flex: 0.5,
                             backgroundColor: "pink",
                             borderTopStartRadius: 10,
                             borderTopEndRadius: 10,
                         }}>
-                        <TouchableOpacity onPress={this.handleChooseCoverPhoto}>
+                        {userId === currentUserId ? (
+                            <TouchableOpacity
+                                onPress={this.handleChooseCoverPhoto}>
+                                <Image
+                                    source={{uri: user.cover_photo_url}}
+                                    style={{width: "100%", height: "100%"}}
+                                />
+                            </TouchableOpacity>
+                        ) : (
                             <Image
                                 source={{uri: user.cover_photo_url}}
                                 style={{width: "100%", height: "100%"}}
                             />
-                        </TouchableOpacity>
+                        )}
                     </View>
                     <View
                         style={{
-                            flex: 0.3,
+                            flex: 0.5,
                             backgroundColor: "white",
                             borderBottomStartRadius: 10,
                             borderBottomEndRadius: 10,
-                        }}></View>
-                </View>
-                <View
-                    style={{
-                        height: 120,
-                        width: 120,
-                        backgroundColor: "gray",
-                        position: "absolute",
-                        left: 12,
-                        bottom: 100,
-                        zIndex: 5,
-                    }}>
-                    {userId === currentUserId ? (
-                        <TouchableOpacity
-                            onPress={this.handleChooseAvatarPhoto}>
-                            <Image
-                                source={{uri: user.avatar_url}}
-                                style={{width: "100%", height: "100%"}}
+                            alignItems: "center",
+                            justifyContent: "center",
+                        }}>
+                        <Text style={{fontSize: 20}}>{user.name}</Text>
+                        <Text style={{fontSize: 16, color: "#848cf6"}}>
+                            @{user.handle}
+                        </Text>
+                        {this.currentUserCanFollow() && (
+                            <Button
+                                title="Connect"
+                                onPress={() => follow(userId, authToken)}
                             />
-                            {/* <View
+                        )}
+                    </View>
+                    <View
+                        style={{
+                            height: 200,
+                            width: 200,
+                            backgroundColor: "gray",
+                            position: "absolute",
+                            alignSelf: "center",
+                            borderRadius: 100,
+                            zIndex: 5,
+                        }}>
+                        {userId === currentUserId ? (
+                            <TouchableOpacity
+                                onPress={this.handleChooseAvatarPhoto}>
+                                <Image
+                                    source={{uri: user.avatar_url}}
+                                    style={{width: "100%", height: "100%"}}
+                                />
+                                {/* <View
                                 style={{
                                     height: 40,
                                     backgroundColor: "red",
                                     borderRadius: 20,
                                 }}></View> */}
-                        </TouchableOpacity>
-                    ) : (
-                        // <Button
-                        //     onPress={this.handleChooseAvatarPhoto}
-                        //     style={{height: 60}}
-                        //     title="change"
-                        // />
-                        <Image
-                            source={{uri: user.avatar_url}}
-                            style={{width: "100%", height: "100%"}}
-                        />
-                    )}
+                            </TouchableOpacity>
+                        ) : (
+                            // <Button
+                            //     onPress={this.handleChooseAvatarPhoto}
+                            //     style={{height: 60}}
+                            //     title="change"
+                            // />
+                            <Image
+                                source={{uri: user.avatar_url}}
+                                style={{width: "100%", height: "100%"}}
+                            />
+                        )}
+                    </View>
+                </View>
+                <View style={styles.stat}>
+                    <View>
+                        <Text>{user.stories_count}</Text>
+                        <Text>Stories</Text>
+                    </View>
+                    <View style={styles.bar}></View>
+                    <View>
+                        <Text>{user.followers_count}</Text>
+                        <Text>Connections</Text>
+                    </View>
+                    <View style={styles.bar}></View>
+                    <View>
+                        <Text>{user.net_inspiration_point}</Text>
+                        <Text>Points</Text>
+                    </View>
                 </View>
             </ScrollView>
         ) : (
@@ -193,6 +244,23 @@ const styles = StyleSheet.create({
         height: 500,
         alignItems: "stretch",
         borderRadius: 10,
+        justifyContent: "center",
+    },
+    stat: {
+        backgroundColor: "white",
+        borderRadius: 10,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: 20,
+    },
+    number: {
+        fontSize: 16,
+    },
+    bar: {
+        height: 40,
+        width: 1,
+        backgroundColor: "#A4A4A4",
     },
 });
 
@@ -200,8 +268,12 @@ const mapStateToProps = state => ({
     authToken: state.auth.authToken,
     currentUserId: state.auth.currentUserId,
     user: state.profile.user,
+    currentUserFollowing: state.profile.currentUserFollowing,
 });
 
-export default connect(mapStateToProps, {fetchUser, uploadProfilePhoto})(
-    Profile,
-);
+export default connect(mapStateToProps, {
+    fetchUser,
+    uploadProfilePhoto,
+    follow,
+    unfollow,
+})(Profile);
