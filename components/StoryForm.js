@@ -22,12 +22,13 @@ function StoryForm(props) {
 const styles = StyleSheet.create({
     container: {
         width: "100%",
+        height: "100%",
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
         backgroundColor: "#fff",
         borderRadius: 14,
-        paddingHorizontal: 18,
+        padding: 18,
     },
     circleShapeView: {
         width: 52,

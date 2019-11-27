@@ -1,6 +1,12 @@
-import {FETCH_USER, FOLLOW} from "../types";
+import {
+    FETCH_USER,
+    FOLLOW,
+    SEE_USER_PROFILE,
+    UNSEE_USER_PROFILE,
+} from "../types";
 
 const initialState = {
+    userId: null,
     user: null,
     currentUserFollowing: false,
 };
@@ -18,6 +24,12 @@ export default function(state = initialState, action) {
         }
         case FOLLOW: {
             return {...state, currentUserFollowing: action.payload};
+        }
+        case SEE_USER_PROFILE: {
+            return {...state, userId: action.payload};
+        }
+        case UNSEE_USER_PROFILE: {
+            return {userId: null, user: null, currentUserFollowing: false};
         }
         default: {
             return state;

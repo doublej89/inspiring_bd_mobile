@@ -14,6 +14,7 @@ import {
     uploadProfilePhoto,
     follow,
     unfollow,
+    unseeUserProfile,
 } from "../actions/content";
 import {connect} from "react-redux";
 import ImagePicker from "react-native-image-picker";
@@ -28,21 +29,44 @@ class Profile extends Component {
         };
         this.handleChooseAvatarPhoto = this.handleChooseAvatarPhoto.bind(this);
         this.handleChooseCoverPhoto = this.handleChooseCoverPhoto.bind(this);
+        this.currentUserCanFollow = this.currentUserCanFollow.bind(this);
+        this.currentUserCanUnfollow = this.currentUserCanUnfollow.bind(this);
+        this.loadUser = this.loadUser.bind(this);
     }
 
     componentDidMount() {
-        const {navigation, fetchUser, authToken, currentUserId} = this.props;
-        let userId = +JSON.stringify(navigation.getParam("userId", "NO-ID"));
+        this.props.navigation.addListener("didFocus", this.loadUser);
+        this.props.navigation.addListener(
+            "didBlur",
+            this.props.unseeUserProfile,
+        );
+    }
+
+    // componentDidUpdate(prevProps) {
+    //     const {fetchUser, authToken, currentUserId, userId} = this.props;
+    //     console.log("Profile uppdating with: " + userId + ", " + currentUserId);
+    //     if (userId && prevProps.userId !== userId) {
+    //         console.log("fetching updated user");
+    //         fetchUser(userId, authToken, currentUserId);
+    //     } else if (prevProps.userId && !userId) {
+    //         fetchUser(currentUserId, authToken);
+    //     }
+    // }
+
+    loadUser() {
+        const {fetchUser, authToken, currentUserId, userId} = this.props;
+        // let userId = +JSON.stringify(navigation.getParam("userId", "NO-ID"));
         if (userId) {
-            this.setState({userId: userId}, () =>
-                fetchUser(userId, authToken, currentUserId),
-            );
+            fetchUser(userId, authToken, currentUserId);
         } else {
-            this.setState({userId: currentUserId}, () =>
-                fetchUser(currentUserId, authToken),
-            );
+            fetchUser(currentUserId, authToken);
         }
     }
+
+    // componentWillUnmount() {
+    //     console.log("Profile closing !");
+    //     this.props.unseeUserProfile();
+    // }
 
     handleChooseCoverPhoto() {
         const {authToken, currentUserId, uploadProfilePhoto} = this.props;
@@ -121,13 +145,22 @@ class Profile extends Component {
     currentUserCanFollow() {
         return (
             !this.props.currentUserFollowing &&
-            this.props.currentUserId !== this.state.userId
+            this.props.userId !== null &&
+            this.props.currentUserId !== this.props.userId
+        );
+    }
+
+    currentUserCanUnfollow() {
+        return (
+            this.props.currentUserFollowing &&
+            this.props.userId !== null &&
+            this.props.currentUserId !== this.props.userId
         );
     }
 
     render() {
-        const {userId} = this.state;
-        const {user, currentUserId, follow} = this.props;
+        const {user, currentUserId, follow, userId, authToken} = this.props;
+        console.log(user);
         return user ? (
             <ScrollView
                 style={{padding: 20, flex: 1, backgroundColor: "#F8F9FF"}}>
@@ -139,7 +172,7 @@ class Profile extends Component {
                             borderTopStartRadius: 10,
                             borderTopEndRadius: 10,
                         }}>
-                        {userId === currentUserId ? (
+                        {userId === null || userId === currentUserId ? (
                             <TouchableOpacity
                                 onPress={this.handleChooseCoverPhoto}>
                                 <Image
@@ -161,16 +194,26 @@ class Profile extends Component {
                             borderBottomStartRadius: 10,
                             borderBottomEndRadius: 10,
                             alignItems: "center",
-                            justifyContent: "center",
+                            justifyContent: "flex-end",
                         }}>
-                        <Text style={{fontSize: 20}}>{user.name}</Text>
-                        <Text style={{fontSize: 16, color: "#848cf6"}}>
+                        <Text style={{fontSize: 26}}>{user.name}</Text>
+                        {/* <Text style={{fontSize: 20, color: "#848cf6"}}>
                             @{user.handle}
-                        </Text>
+                        </Text> */}
                         {this.currentUserCanFollow() && (
                             <Button
                                 title="Connect"
-                                onPress={() => follow(userId, authToken)}
+                                onPress={() =>
+                                    follow(userId, currentUserId, authToken)
+                                }
+                            />
+                        )}
+                        {this.currentUserCanUnfollow() && (
+                            <Button
+                                title="DisConnect"
+                                onPress={() =>
+                                    unfollow(userId, currentUserId, authToken)
+                                }
                             />
                         )}
                     </View>
@@ -184,7 +227,7 @@ class Profile extends Component {
                             borderRadius: 100,
                             zIndex: 5,
                         }}>
-                        {userId === currentUserId ? (
+                        {userId === null || userId === currentUserId ? (
                             <TouchableOpacity
                                 onPress={this.handleChooseAvatarPhoto}>
                                 <Image
@@ -241,7 +284,7 @@ class Profile extends Component {
 
 const styles = StyleSheet.create({
     profileHeader: {
-        height: 500,
+        height: 400,
         alignItems: "stretch",
         borderRadius: 10,
         justifyContent: "center",
@@ -269,6 +312,7 @@ const mapStateToProps = state => ({
     currentUserId: state.auth.currentUserId,
     user: state.profile.user,
     currentUserFollowing: state.profile.currentUserFollowing,
+    userId: state.profile.userId,
 });
 
 export default connect(mapStateToProps, {
@@ -276,4 +320,5 @@ export default connect(mapStateToProps, {
     uploadProfilePhoto,
     follow,
     unfollow,
+    unseeUserProfile,
 })(Profile);

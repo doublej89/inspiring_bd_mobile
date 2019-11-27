@@ -5,7 +5,6 @@ import LogoutButton from "./LogoutButton";
 import Animated from "react-native-reanimated";
 
 const TabBar = props => {
-    console.log(props);
     const {navigationState, navigation, position} = props;
     return (
         <View

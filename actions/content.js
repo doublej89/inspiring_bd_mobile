@@ -22,6 +22,8 @@ import {
     DELETE_REPLY,
     FETCH_USER,
     FOLLOW,
+    SEE_USER_PROFILE,
+    UNSEE_USER_PROFILE,
 } from "../types";
 import axios from "axios";
 import {strim} from "../utils";
@@ -80,7 +82,6 @@ export const submitStory = (
                 config,
             );
         } else {
-            console.log(formData);
             request = axios.patch(
                 `https://dev.inspiringbangladesh.com/api/v1/stories/${storyId}`,
                 formData,
@@ -89,7 +90,6 @@ export const submitStory = (
         }
         request.then(response => {
             if (response.data.story) {
-                console.log(response.data.story);
                 dispatch({
                     type: storyId === null ? SUBMIT_STORY : UPDATE_STORY,
                     payload: response.data.story,
@@ -167,7 +167,6 @@ export const loadRootComments = (
             )
             .then(response => {
                 if (response.data.comments) {
-                    console.log(response.data.comments);
                     dispatch({type: LOAD_COMMENTS, payload: response.data});
                 }
             })
@@ -221,7 +220,6 @@ export const updateComment = (
     reply = false,
 ) => dispatch => {
     let commentContent = strim(newCommentBody);
-    console.log(commentContent);
     if (commentContent.length > 0) {
         axios
             .put(
@@ -235,7 +233,6 @@ export const updateComment = (
             )
             .then(response => {
                 if (response.data.comment) {
-                    console.log(response.data.comment);
                     dispatch({
                         type: reply ? UPDATE_REPLY : UPDATE_COMMENT,
                         payload: response.data,
@@ -380,7 +377,9 @@ export const fetchUser = (userId, authToken, currUserId = null) => dispatch => {
             Authorization: authToken,
         },
     };
-    if (currUserId !== null) config[params] = {curr_user_id: currUserId};
+    if (currUserId !== null && currUserId !== userId) {
+        config["params"] = {curr_user_id: currUserId};
+    }
     axios
         .get(
             `https://dev.inspiringbangladesh.com/api/v1/users/${userId}`,
@@ -437,12 +436,13 @@ export const uploadProfilePhoto = (
         });
 };
 
-export const follow = (userId, authToken) => dispatch => {
+export const follow = (userId, currentUserId, authToken) => dispatch => {
     axios
         .put(
             `https://dev.inspiringbangladesh.com/api/v1/users/${userId}/follow`,
             null,
             {
+                params: {curr_user_id: currentUserId},
                 headers: {
                     Authorization: authToken,
                 },
@@ -453,12 +453,13 @@ export const follow = (userId, authToken) => dispatch => {
         });
 };
 
-export const unfollow = (userId, authToken) => dispatch => {
+export const unfollow = (userId, currentUserId, authToken) => dispatch => {
     axios
         .put(
             `https://dev.inspiringbangladesh.com/api/v1/users/${userId}/unfollow`,
             null,
             {
+                params: {curr_user_id: currentUserId},
                 headers: {
                     Authorization: authToken,
                 },
@@ -468,5 +469,17 @@ export const unfollow = (userId, authToken) => dispatch => {
             dispatch({type: FOLLOW, payload: response.data.following});
         });
 };
+
+export const seeUserProfile = userId => {
+    console.log("sending:" + userId);
+    return {
+        type: SEE_USER_PROFILE,
+        payload: userId,
+    };
+};
+
+export const unseeUserProfile = () => ({
+    type: UNSEE_USER_PROFILE,
+});
 
 export const refreshPage = () => ({type: REFRESH_PAGE});

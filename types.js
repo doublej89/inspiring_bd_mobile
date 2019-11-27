@@ -25,3 +25,5 @@ export const UPLOAD_PROGRESS = "upload_progress";
 export const FETCH_USER = "fetch_user";
 export const UPLOAD_PHOTO = "upload_photo";
 export const FOLLOW = "follow";
+export const SEE_USER_PROFILE = "SEE_USER_PROFILE";
+export const UNSEE_USER_PROFILE = "UNSEE_USER_PROFILE";

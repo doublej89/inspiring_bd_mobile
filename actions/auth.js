@@ -4,6 +4,7 @@ import decode from "jwt-decode";
 import axios from "axios";
 
 export const login = (credentials, navigation) => dispatch => {
+    console.log(credentials);
     axios
         .post(
             "https://dev.inspiringbangladesh.com/api/v1/auth/login",

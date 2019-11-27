@@ -27,6 +27,7 @@ function Story(props) {
         currentUserId,
         authToken,
         toggleEditMenu,
+        seeUserProfile,
     } = props;
     let {user} = story;
 
@@ -44,63 +45,61 @@ function Story(props) {
             </View>
             <View style={styles.singlePostContent}>
                 <View style={styles.singlePostUser}>
-                    {story && story.user && (
-                        <Image
-                            source={{uri: story.user.avatar_url}}
-                            style={styles.profileImage}
-                        />
-                    )}
-                    <View style={{padding: 4, marginLeft: 10}}>
-                        {story.user && (
-                            <Text
-                                style={{
-                                    fontSize: 14,
-                                    marginBottom: 0,
-                                }}>
-                                {story.user.name}
-                            </Text>
-                        )}
-                        {story.user && (
-                            <Text
-                                style={{
-                                    color: "#84A6F6",
-                                    fontSize: 16,
-                                }}>
-                                @{user.handle}
-                            </Text>
-                        )}
-                    </View>
-                    {story.user.id !== currentUserId ? (
-                        <FollowIcon
-                            style={{marginLeft: "auto", marginBottom: 15}}
-                        />
-                    ) : (
-                        <View style={{flexDirection: "row"}}>
-                            <FollowIcon
-                                style={{marginLeft: "auto", marginBottom: 15}}
+                    <View style={{flexDirection: "row"}}>
+                        {story && story.user && (
+                            <Image
+                                source={{uri: story.user.avatar_url}}
+                                style={styles.profileImage}
                             />
-                            <TouchableOpacity
-                                onPress={() => {
-                                    if (story.photos.length > 0) {
-                                        toggleEditMenu(
-                                            true,
-                                            story.id,
-                                            story.description,
-                                            story.photos[
-                                                story.photos.length - 1
-                                            ].url,
-                                        );
-                                    } else {
-                                        toggleEditMenu(
-                                            true,
-                                            story.id,
-                                            story.description,
-                                        );
-                                    }
-                                }}>
-                                <FontAwesomeIcon icon={faEllipsisV} />
-                            </TouchableOpacity>
-                        </View>
+                        )}
+
+                        <TouchableOpacity
+                            onPress={() => {
+                                // navigation.navigate("Profile", {
+                                //     userId: user.id,
+                                // });
+                                seeUserProfile(user.id);
+                                navigation.navigate("Profile");
+                            }}>
+                            <View style={{padding: 4, marginLeft: 10}}>
+                                <Text
+                                    style={{
+                                        fontSize: 14,
+                                        marginBottom: 0,
+                                    }}>
+                                    {story.user.name}
+                                </Text>
+                                <Text
+                                    style={{
+                                        color: "#84A6F6",
+                                        fontSize: 16,
+                                    }}>
+                                    @{user.handle}
+                                </Text>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
+                    {story.user.id === currentUserId && (
+                        <TouchableOpacity
+                            onPress={() => {
+                                if (story.photos.length > 0) {
+                                    toggleEditMenu(
+                                        true,
+                                        story.id,
+                                        story.description,
+                                        story.photos[story.photos.length - 1]
+                                            .url,
+                                    );
+                                } else {
+                                    toggleEditMenu(
+                                        true,
+                                        story.id,
+                                        story.description,
+                                    );
+                                }
+                            }}>
+                            <FontAwesomeIcon icon={faEllipsisV} />
+                        </TouchableOpacity>
                     )}
                 </View>
                 <TimeAgo
@@ -161,7 +160,7 @@ function Story(props) {
                                 height: 30,
                             }}
                         /> */}
-                            <HeartIcon style={{height: 14, width: 14}} />
+                            <HeartIcon style={{height: 10, width: 10}} />
                             <Text style={{fontSize: 16}}>Love</Text>
                         </View>
                     </TouchableOpacity>
@@ -224,6 +223,7 @@ const styles = StyleSheet.create({
     },
     singlePostUser: {
         flexDirection: "row",
+        justifyContent: "space-between",
     },
     profileImage: {
         height: 50,
@@ -243,7 +243,4 @@ const mapStateToProps = state => ({
     authToken: state.auth.authToken,
 });
 
-export default connect(
-    mapStateToProps,
-    {handleInspired},
-)(Story);
+export default connect(mapStateToProps, {handleInspired})(Story);

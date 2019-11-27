@@ -21,6 +21,7 @@ import {
     refreshPage,
     submitStory,
     deleteStory,
+    seeUserProfile,
 } from "../actions/content";
 import {logout} from "../actions/auth";
 import LogoTitle from "./LogoTitle";
@@ -111,7 +112,6 @@ class UserStoryList extends Component {
                 if (!updateSelected) {
                     submitStory(storyDescription, file, authToken);
                 } else {
-                    console.log(file);
                     submitStory(
                         storyDescription,
                         file,
@@ -166,6 +166,7 @@ class UserStoryList extends Component {
             navigation,
             authToken,
             deleteStory,
+            seeUserProfile,
         } = this.props;
         const {
             photoSource,
@@ -177,12 +178,12 @@ class UserStoryList extends Component {
         } = this.state;
 
         return !loading ? (
-            <View style={{flex: 1, padding: 15, backgroundColor: "#F8F9FF"}}>
+            <View style={{flex: 1, padding: 20, backgroundColor: "#F8F9FF"}}>
                 {/* <View style={{flex: 1}}> */}
-                <View style={{flex: 0.1, marginBottom: 10}}>
+                <View style={{flex: 0.2, marginBottom: 10}}>
                     <StoryForm activateModal={this.onModalToggle} />
                 </View>
-                <View style={{flex: 0.9}}>
+                <View style={{flex: 0.8}}>
                     <FlatList
                         data={stories}
                         renderItem={({item}) => (
@@ -190,6 +191,7 @@ class UserStoryList extends Component {
                                 story={item}
                                 navigation={navigation}
                                 toggleEditMenu={this.toggleEditMenu}
+                                seeUserProfile={seeUserProfile}
                             />
                         )}
                         keyExtractor={item => item.id.toString()}
@@ -263,9 +265,16 @@ class UserStoryList extends Component {
                                     <TouchableOpacity
                                         onPress={this.handleChoosePhoto}>
                                         <View>
-                                            <PickerIcon
-                                                style={{width: 50, height: 50}}
-                                            />
+                                            <View
+                                                style={styles.circleShapeView}>
+                                                <Text
+                                                    style={{
+                                                        fontSize: 24,
+                                                        color: "white",
+                                                    }}>
+                                                    +
+                                                </Text>
+                                            </View>
                                         </View>
                                     </TouchableOpacity>
                                 </View>
@@ -273,9 +282,15 @@ class UserStoryList extends Component {
                                 <TouchableOpacity
                                     onPress={this.handleChoosePhoto}>
                                     <View style={{alignSelf: "flex-end"}}>
-                                        <PickerIcon
-                                            style={{width: 50, height: 50}}
-                                        />
+                                        <View style={styles.circleShapeView}>
+                                            <Text
+                                                style={{
+                                                    fontSize: 24,
+                                                    color: "white",
+                                                }}>
+                                                +
+                                            </Text>
+                                        </View>
                                     </View>
                                 </TouchableOpacity>
                             )}
@@ -283,6 +298,7 @@ class UserStoryList extends Component {
 
                         <Button
                             title="Submit"
+                            disabled={description.length < 1}
                             onPress={this.handleStorySubmit}
                         />
                     </View>
@@ -390,6 +406,14 @@ const styles = StyleSheet.create({
         height: 50,
         borderBottomColor: "rgba(0, 0, 0, 0.4)",
     },
+    circleShapeView: {
+        width: 52,
+        height: 52,
+        borderRadius: 52 / 2,
+        backgroundColor: "#00BCD4",
+        justifyContent: "center",
+        alignItems: "center",
+    },
 });
 
 const mapStateToProps = state => ({
@@ -400,7 +424,11 @@ const mapStateToProps = state => ({
     refreshing: state.content.refreshing,
 });
 
-export default connect(
-    mapStateToProps,
-    {loadItems, refreshPage, logout, submitStory, deleteStory},
-)(UserStoryList);
+export default connect(mapStateToProps, {
+    loadItems,
+    refreshPage,
+    logout,
+    submitStory,
+    deleteStory,
+    seeUserProfile,
+})(UserStoryList);
