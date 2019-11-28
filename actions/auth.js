@@ -1,10 +1,14 @@
 import {AsyncStorage} from "react-native";
-import {USER_AUTHENTICATED, USER_LOGGED_OUT, LOGIN_ERROR} from "../types";
+import {
+    USER_AUTHENTICATED,
+    USER_LOGGED_OUT,
+    LOGIN_ERROR,
+    CLEAR_AUTH_ERROR,
+} from "../types";
 import decode from "jwt-decode";
 import axios from "axios";
 
 export const login = (credentials, navigation) => dispatch => {
-    console.log(credentials);
     axios
         .post(
             "https://dev.inspiringbangladesh.com/api/v1/auth/login",
@@ -38,7 +42,7 @@ export const login = (credentials, navigation) => dispatch => {
         });
 };
 
-export const signup = (credentials, navigation) => dispatch => {
+export const signup = (credentials, navigation, showMessage) => dispatch => {
     axios
         .post("https://dev.inspiringbangladesh.com/api/v1/signup", credentials)
         .then(response => {
@@ -54,7 +58,13 @@ export const signup = (credentials, navigation) => dispatch => {
                     currentUserId: +decoded.user_id,
                 },
             });
-            if (response.data.auth_token) navigation.navigate("App");
+            if (response.data.auth_token) {
+                navigation.navigate("App");
+                showMessage({
+                    title: response.data.message,
+                    type: "success",
+                });
+            }
         });
 };
 
@@ -69,3 +79,5 @@ export const logout = navigation => dispatch => {
 
     // });
 };
+
+export const clearAuthError = () => ({type: CLEAR_AUTH_ERROR});

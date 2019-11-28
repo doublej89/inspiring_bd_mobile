@@ -15,9 +15,11 @@ import {
     follow,
     unfollow,
     unseeUserProfile,
+    changeConnectionState,
 } from "../actions/content";
 import {connect} from "react-redux";
 import ImagePicker from "react-native-image-picker";
+import NetInfo from "@react-native-community/netinfo";
 
 class Profile extends Component {
     constructor(props) {
@@ -35,10 +37,31 @@ class Profile extends Component {
     }
 
     componentDidMount() {
-        this.props.navigation.addListener("didFocus", this.loadUser);
-        this.props.navigation.addListener(
+        this.didFocusSubscription = this.props.navigation.addListener(
+            "didFocus",
+            this.loadUser,
+        );
+        this.didBlurSubscription = this.props.navigation.addListener(
             "didBlur",
             this.props.unseeUserProfile,
+        );
+        NetInfo.isConnected.addEventListener(
+            "connectionChange",
+            isConnected => {
+                this.props.changeConnectionState(isConnected);
+                if (!isConnected) this.props.navigation.navigate("NoNetwork");
+            },
+        );
+    }
+
+    componentWillUnmount() {
+        this.didFocusSubscription.remove();
+        this.didBlurSubscription.remove();
+        NetInfo.isConnected.removeEventListener(
+            "connectionChange",
+            isConnected => {
+                this.props.changeConnectionState(isConnected);
+            },
         );
     }
 
@@ -321,4 +344,5 @@ export default connect(mapStateToProps, {
     follow,
     unfollow,
     unseeUserProfile,
+    changeConnectionState,
 })(Profile);

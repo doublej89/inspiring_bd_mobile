@@ -27,3 +27,5 @@ export const UPLOAD_PHOTO = "upload_photo";
 export const FOLLOW = "follow";
 export const SEE_USER_PROFILE = "SEE_USER_PROFILE";
 export const UNSEE_USER_PROFILE = "UNSEE_USER_PROFILE";
+export const CONNECTION_CHANGED = "CONNECTION_CHANGED";
+export const CLEAR_AUTH_ERROR = "CLEAR_AUTH_ERROR";

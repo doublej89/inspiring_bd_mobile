@@ -17,10 +17,12 @@ import {
     closeRepliesList,
     updateComment,
     deleteComment,
+    changeConnectionState,
 } from "../actions/content";
 import Comment from "./Comment";
 import ModalCloseButton from "./ModalCloseButton";
 import Modal from "react-native-modal";
+import NetInfo from "@react-native-community/netinfo";
 
 class CommentList extends Component {
     static navigationOptions = props => {
@@ -63,6 +65,13 @@ class CommentList extends Component {
         );
         this.setState({storyId, commentId, repliesCount});
         loadReplies(storyId, commentId, authToken, repliesCount);
+        NetInfo.isConnected.addEventListener(
+            "connectionChange",
+            isConnected => {
+                this.props.changeConnectionState(isConnected);
+                if (!isConnected) this.props.navigation.navigate("NoNetwork");
+            },
+        );
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -74,14 +83,15 @@ class CommentList extends Component {
             repliesCount += diff;
             this.setState({repliesCount});
         }
-        // if (updateSelected !== prevState.updateSelected && updateSelected) {
-        //     this.setState(
-        //         {newReplyContent: this.state.selectedCommentBody},
-        //         () => {
-        //             this.replyField.current.focus();
-        //         },
-        //     );
-        // }
+    }
+
+    componentWillUnmount() {
+        NetInfo.isConnected.removeEventListener(
+            "connectionChange",
+            isConnected => {
+                this.props.changeConnectionState(isConnected);
+            },
+        );
     }
 
     toggleEditMenu(
@@ -337,14 +347,12 @@ const mapStateToProps = state => ({
     replies: state.commentList.replies,
 });
 
-export default connect(
-    mapStateToProps,
-    {
-        loadReplies,
-        submitReply,
-        updateReplyCount,
-        closeRepliesList,
-        updateComment,
-        deleteComment,
-    },
-)(CommentList);
+export default connect(mapStateToProps, {
+    loadReplies,
+    submitReply,
+    updateReplyCount,
+    closeRepliesList,
+    updateComment,
+    deleteComment,
+    changeConnectionState,
+})(CommentList);

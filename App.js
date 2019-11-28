@@ -21,6 +21,7 @@ import LoginScreen from "./components/Login";
 import ProfileScreen from "./components/Profile";
 import CommentScreen from "./components/CommentList";
 import RepliesScreen from "./components/RepliesList";
+import NoNetworkScreen from "./components/NoNetworkScreen";
 import TabBar from "./components/TabBar";
 import AuthLoadingScreen from "./AuthLoadingScreen";
 import {createStore, applyMiddleware} from "redux";
@@ -29,6 +30,7 @@ import thunk from "redux-thunk";
 import reducers from "./reducers";
 import {FontAwesomeIcon} from "@fortawesome/react-native-fontawesome";
 import {faHome, faUserCog} from "@fortawesome/free-solid-svg-icons";
+import FlashMessage from "react-native-flash-message";
 
 const store = createStore(reducers, applyMiddleware(thunk));
 
@@ -137,6 +139,7 @@ const AppContainer = createAppContainer(
             AuthLoading: AuthLoadingScreen,
             App: AppStack,
             Auth: AuthStack,
+            NoNetwork: NoNetworkScreen,
         },
         {
             initialRouteName: "AuthLoading",
@@ -149,6 +152,7 @@ export default class App extends Component {
         return (
             <Provider store={store}>
                 <AppContainer />
+                <FlashMessage position="top" />
             </Provider>
         );
     }

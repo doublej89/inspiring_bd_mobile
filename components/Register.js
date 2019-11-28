@@ -1,5 +1,9 @@
 import React, {Component} from "react";
 import {Text, View, TextInput, StyleSheet, Button} from "react-native";
+import {signup, clearAuthError} from "../actions/auth";
+import {changeConnectionState} from "../actions/content";
+import NetInfo from "@react-native-community/netinfo";
+import {showMessage} from "react-native-flash-message";
 
 class Register extends Component {
     constructor(props) {
@@ -26,6 +30,50 @@ class Register extends Component {
         };
     }
 
+    componentDidMount() {
+        NetInfo.isConnected.addEventListener(
+            "connectionChange",
+            isConnected => {
+                this.props.changeConnectionState(isConnected);
+                if (!isConnected) this.props.navigation.navigate("NoNetwork");
+            },
+        );
+        this.didBlurSubscription = this.props.navigation.addListener(
+            "didBlur",
+            () => {
+                if (this.props.auth.loginError) this.props.clearAuthError();
+            },
+        );
+    }
+
+    componentWillUnmount() {
+        NetInfo.isConnected.removeEventListener(
+            "connectionChange",
+            isConnected => {
+                this.props.changeConnectionState(isConnected);
+            },
+        );
+        this.didBlurSubscription.remove();
+    }
+
+    onLoginPressed() {
+        const {inputs} = this.state;
+        const {signup} = this.props;
+        const submittedInputs = {};
+        const credentials = {};
+        for (const [key, input] of Object.entries(inputs)) {
+            if (input.errorLabel) return;
+            submittedInputs[key] = {
+                ...input,
+                value: "",
+            };
+            credentials[key] = input.value;
+        }
+        this.setState({inputs: submittedInputs}, () => {
+            signup(credentials, this.props.navigation, showMessage);
+        });
+    }
+
     renderError(key) {
         const {inputs} = this.state;
         if (inputs[key].errorLabel) {
@@ -35,6 +83,7 @@ class Register extends Component {
     }
 
     render() {
+        const {auth} = this.props;
         return (
             <View style={styles.container}>
                 <View>
@@ -79,10 +128,16 @@ class Register extends Component {
                     />
                     {this.renderError("confirmPassword")}
                 </View>
-                <Button
-                    title="Login"
-                    onPress={() => this.props.navigation("Login")}
-                />
+                {auth && auth.loginError ? (
+                    <Text style={{color: "red"}}>{auth.loginError}</Text>
+                ) : null}
+                <View style={{flexDirection: "row"}}>
+                    <Text>Already have an account? </Text>
+                    <Text
+                        onPress={() => this.props.navigation.navigate("Login")}>
+                        Login
+                    </Text>
+                </View>
                 <View style={styles.button}>
                     <Button title="Submit Form" onPress={this.onLoginPressed} />
                 </View>
@@ -120,4 +175,12 @@ const styles = StyleSheet.create({
     },
 });
 
-export default Register;
+const mapStateToProps = state => ({
+    auth: state.auth,
+});
+
+export default connect(mapStateToProps, {
+    signup,
+    changeConnectionState,
+    clearAuthError,
+})(Register);

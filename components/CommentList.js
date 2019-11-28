@@ -17,8 +17,13 @@ import {
 } from "../actions/content";
 import Comment from "./Comment";
 import ModalCloseButton from "./ModalCloseButton";
-import {updateComment, deleteComment} from "../actions/content";
+import {
+    updateComment,
+    deleteComment,
+    changeConnectionState,
+} from "../actions/content";
 import Modal from "react-native-modal";
+import NetInfo from "@react-native-community/netinfo";
 
 class CommentList extends Component {
     static navigationOptions = props => {
@@ -76,6 +81,13 @@ class CommentList extends Component {
         if (writeComment === "yes") {
             this._textInput.focus();
         }
+        NetInfo.isConnected.addEventListener(
+            "connectionChange",
+            isConnected => {
+                this.props.changeConnectionState(isConnected);
+                if (!isConnected) this.props.navigation.navigate("NoNetwork");
+            },
+        );
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -97,9 +109,14 @@ class CommentList extends Component {
         }
     }
 
-    // componentWillUnmount() {
-    //     this.props.closeCommentList();
-    // }
+    componentWillUnmount() {
+        NetInfo.isConnected.removeEventListener(
+            "connectionChange",
+            isConnected => {
+                this.props.changeConnectionState(isConnected);
+            },
+        );
+    }
 
     handleCommentSubmission(evt) {
         const {submitComment, updateComment, authToken} = this.props;
@@ -395,14 +412,12 @@ const mapStateToProps = state => ({
     hasMoreItems: state.commentList.hasMoreItems,
 });
 
-export default connect(
-    mapStateToProps,
-    {
-        loadRootComments,
-        submitComment,
-        updateCommentCount,
-        closeCommentList,
-        updateComment,
-        deleteComment,
-    },
-)(CommentList);
+export default connect(mapStateToProps, {
+    loadRootComments,
+    submitComment,
+    updateCommentCount,
+    closeCommentList,
+    updateComment,
+    deleteComment,
+    changeConnectionState,
+})(CommentList);

@@ -1,4 +1,9 @@
-import {USER_AUTHENTICATED, USER_LOGGED_OUT, LOGIN_ERROR} from "../types";
+import {
+    USER_AUTHENTICATED,
+    USER_LOGGED_OUT,
+    LOGIN_ERROR,
+    CLEAR_AUTH_ERROR,
+} from "../types";
 
 const INITIAL_STATE = {
     authToken: null,
@@ -23,6 +28,9 @@ export default (state = INITIAL_STATE, action) => {
                 authToken: null,
                 currentUserId: null,
             };
+        case CLEAR_AUTH_ERROR: {
+            return {...state, loginError: null};
+        }
         default:
             return state;
     }

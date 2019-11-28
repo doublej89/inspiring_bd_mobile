@@ -22,12 +22,13 @@ import {
     submitStory,
     deleteStory,
     seeUserProfile,
+    changeConnectionState,
 } from "../actions/content";
 import {logout} from "../actions/auth";
 import LogoTitle from "./LogoTitle";
 import Modal from "react-native-modal";
-import PickerIcon from "../assets/icons/Ellipse_11_2.svg";
 import ImagePicker from "react-native-image-picker";
+import NetInfo from "@react-native-community/netinfo";
 
 class UserStoryList extends Component {
     static navigationOptions = ({navigation}) => {
@@ -149,6 +150,22 @@ class UserStoryList extends Component {
         this.props.navigation.setParams({logout: this.props.logout});
         const {storiesPage} = this.props;
         this.props.loadItems(storiesPage);
+        NetInfo.isConnected.addEventListener(
+            "connectionChange",
+            isConnected => {
+                this.props.changeConnectionState(isConnected);
+                if (!isConnected) this.props.navigation.navigate("NoNetwork");
+            },
+        );
+    }
+
+    componentWillUnmount() {
+        NetInfo.isConnected.removeEventListener(
+            "connectionChange",
+            isConnected => {
+                this.props.changeConnectionState(isConnected);
+            },
+        );
     }
 
     _handleRefresh = () => {
@@ -431,4 +448,5 @@ export default connect(mapStateToProps, {
     submitStory,
     deleteStory,
     seeUserProfile,
+    changeConnectionState,
 })(UserStoryList);

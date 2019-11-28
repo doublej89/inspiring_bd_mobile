@@ -25,6 +25,7 @@ const TabBar = props => {
                         focusAnim={focusAnim}
                         title={route.routeName}
                         onPress={() => navigation.navigate(route.routeName)}
+                        key={index}
                     />
                 );
             })}

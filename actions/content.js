@@ -24,6 +24,7 @@ import {
     FOLLOW,
     SEE_USER_PROFILE,
     UNSEE_USER_PROFILE,
+    CONNECTION_CHANGED,
 } from "../types";
 import axios from "axios";
 import {strim} from "../utils";
@@ -483,3 +484,8 @@ export const unseeUserProfile = () => ({
 });
 
 export const refreshPage = () => ({type: REFRESH_PAGE});
+
+export const changeConnectionState = isConnected => ({
+    type: CONNECTION_CHANGED,
+    payload: isConnected,
+});

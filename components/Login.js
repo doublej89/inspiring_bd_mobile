@@ -9,8 +9,10 @@ import {
 } from "react-native";
 
 import {connect} from "react-redux";
-import {login} from "../actions/auth";
+import {login, clearAuthError} from "../actions/auth";
+import {changeConnectionState} from "../actions/content";
 import {validationService} from "../validation/service";
+import NetInfo from "@react-native-community/netinfo";
 
 class Login extends Component {
     constructor(props) {
@@ -31,6 +33,32 @@ class Login extends Component {
         this.onInputChange = validationService.onInputChange.bind(this);
         //this.getFormValidation = validationService.getFormValidation.bind(this);
         this.onLoginPressed = this.onLoginPressed.bind(this);
+    }
+
+    componentDidMount() {
+        NetInfo.isConnected.addEventListener(
+            "connectionChange",
+            isConnected => {
+                this.props.changeConnectionState(isConnected);
+                if (!isConnected) this.props.navigation.navigate("NoNetwork");
+            },
+        );
+        this.didBlurSubscription = this.props.navigation.addListener(
+            "didBlur",
+            () => {
+                if (this.props.auth.loginError) this.props.clearAuthError();
+            },
+        );
+    }
+
+    componentWillUnmount() {
+        NetInfo.isConnected.removeEventListener(
+            "connectionChange",
+            isConnected => {
+                this.props.changeConnectionState(isConnected);
+            },
+        );
+        this.didBlurSubscription.remove();
     }
 
     onLoginPressed() {
@@ -63,37 +91,36 @@ class Login extends Component {
         const {auth} = this.props;
         return (
             <View style={styles.container}>
-                <ScrollView>
-                    <View>
-                        <Text>Email</Text>
-                        <TextInput
-                            style={styles.input}
-                            onChangeText={value => {
-                                this.onInputChange({key: "email", value});
-                            }}
-                        />
-                        {this.renderError("email")}
-                    </View>
-                    <View>
-                        <Text>Password</Text>
-                        <TextInput
-                            style={styles.input}
-                            secureTextEntry={true}
-                            onChangeText={value => {
-                                this.onInputChange({key: "password", value});
-                            }}
-                        />
-                        {this.renderError("password")}
-                    </View>
-                </ScrollView>
+                <View>
+                    <Text>Email</Text>
+                    <TextInput
+                        style={styles.input}
+                        onChangeText={value => {
+                            this.onInputChange({key: "email", value});
+                        }}
+                    />
+                    {this.renderError("email")}
+                </View>
+                <View>
+                    <Text>Password</Text>
+                    <TextInput
+                        style={styles.input}
+                        secureTextEntry={true}
+                        onChangeText={value => {
+                            this.onInputChange({key: "password", value});
+                        }}
+                    />
+                    {this.renderError("password")}
+                </View>
+                {auth && auth.loginError ? (
+                    <Text style={{color: "red"}}>{auth.loginError}</Text>
+                ) : null}
                 <Text>Don't have an account?</Text>
                 <Text
                     onPress={() => this.props.navigation.navigate("Register")}>
                     Register
                 </Text>
-                {auth && auth.loginError ? (
-                    <Text style={{color: "red"}}>{auth.loginError}</Text>
-                ) : null}
+
                 <View style={styles.button}>
                     <Button title="Submit Form" onPress={this.onLoginPressed} />
                 </View>
@@ -135,7 +162,4 @@ const mapStateToProps = state => ({
     auth: state.auth,
 });
 
-export default connect(
-    mapStateToProps,
-    {login},
-)(Login);
+export default connect(mapStateToProps, {login, changeConnectionState})(Login);
