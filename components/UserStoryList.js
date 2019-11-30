@@ -159,6 +159,10 @@ class UserStoryList extends Component {
         );
     }
 
+    // componentDidUpdate() {
+    //     if (this.props.profilePicChanged) this.props.loadItems(1);
+    // }
+
     componentWillUnmount() {
         NetInfo.isConnected.removeEventListener(
             "connectionChange",
@@ -218,6 +222,19 @@ class UserStoryList extends Component {
                         onRefresh={this._handleRefresh}
                         refreshing={refreshing}
                         extraData={this.props}
+                        ListEmptyComponent={() => (
+                            <View
+                                style={{
+                                    flex: 1,
+                                    justifyContent: "center",
+                                    backgroundColor: "F8F9FF",
+                                }}>
+                                <Text
+                                    style={{textAlign: "center", fontSize: 18}}>
+                                    No posts to show
+                                </Text>
+                            </View>
+                        )}
                     />
                 </View>
 

@@ -14,13 +14,11 @@ const initialState = {
 export default function(state = initialState, action) {
     switch (action.type) {
         case FETCH_USER: {
-            if (action.payload) {
-                return {
-                    ...state,
-                    user: action.payload.user,
-                    currentUserFollowing: action.payload.following,
-                };
-            }
+            return {
+                ...state,
+                user: {...action.payload.user},
+                currentUserFollowing: action.payload.following,
+            };
         }
         case FOLLOW: {
             return {...state, currentUserFollowing: action.payload};

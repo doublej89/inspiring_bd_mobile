@@ -24,7 +24,7 @@ function Comment(props) {
     } = props;
     return (
         <View style={styles.commentContainer}>
-            <View style={{flexDirection: "row"}}>
+            <View style={{flexDirection: "row", marginBottom: 10}}>
                 <Image
                     source={{uri: comment.user.avatar_url}}
                     style={styles.profilePic}
@@ -71,42 +71,46 @@ function Comment(props) {
                         flexDirection: "row",
                         justifyContent: "space-between",
                     }}>
-                    <View style={{flexDirection: "row"}}>
-                        <View style={{flexDirection: "row"}}>
-                            <ReplyIcon style={styles.actionIcon} />
-                            <Text style={{fontSize: 14, color: "#535454"}}>
-                                Reply
-                            </Text>
-                        </View>
-                    </View>
-                    <TimeAgo time={comment.created_at} style={styles.timeAgo} />
-                    <View style={{flexDirection: "row"}}>
-                        <TouchableNativeFeedback
+                    {(comment.parent_id || navigation) && (
+                        <TouchableOpacity
                             onPress={() => {
                                 if (comment.parent_id) {
                                     replyToReply(comment.user.name);
                                 } else {
                                     navigation.navigate("RepliesList", {
-                                        storyId: comment.story_id,
-                                        commentId: comment.id,
-                                        repliesCount: comment.replies_count,
+                                        // storyId: comment.story_id,
+                                        // commentId: comment.id,
+                                        // repliesCount: comment.replies_count,
+                                        parentComment: comment,
                                     });
                                 }
                             }}>
                             <View style={{flexDirection: "row"}}>
-                                <CommentIcon style={styles.actionIcon} />
-                                {!comment.parent_id && (
-                                    <Text
-                                        style={{
-                                            fontSize: 14,
-                                            color: "#535454",
-                                        }}>
-                                        {comment.replies_count}
-                                    </Text>
-                                )}
+                                <ReplyIcon width={40} height={40} />
+                                <Text
+                                    style={{
+                                        fontSize: 14,
+                                        color: "#535454",
+                                    }}>
+                                    Reply
+                                </Text>
                             </View>
-                        </TouchableNativeFeedback>
-                    </View>
+                        </TouchableOpacity>
+                    )}
+                    <TimeAgo time={comment.created_at} style={styles.timeAgo} />
+
+                    {!comment.parent_id && (
+                        <View style={{flexDirection: "row"}}>
+                            <CommentIcon width={40} height={40} />
+                            <Text
+                                style={{
+                                    fontSize: 14,
+                                    color: "#535454",
+                                }}>
+                                {comment.replies_count}
+                            </Text>
+                        </View>
+                    )}
                 </View>
             </View>
         </View>

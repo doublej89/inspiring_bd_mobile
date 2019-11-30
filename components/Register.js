@@ -4,6 +4,8 @@ import {signup, clearAuthError} from "../actions/auth";
 import {changeConnectionState} from "../actions/content";
 import NetInfo from "@react-native-community/netinfo";
 import {showMessage} from "react-native-flash-message";
+import {connect} from "react-redux";
+import {validationService} from "../validation/service";
 
 class Register extends Component {
     constructor(props) {
@@ -28,6 +30,10 @@ class Register extends Component {
                 },
             },
         };
+
+        this.onInputChange = validationService.onInputChange.bind(this);
+        //this.getFormValidation = validationService.getFormValidation.bind(this);
+        this.onLoginPressed = this.onLoginPressed.bind(this);
     }
 
     componentDidMount() {
@@ -94,7 +100,7 @@ class Register extends Component {
                             this.onInputChange({key: "name", value});
                         }}
                     />
-                    {this.renderError("email")}
+                    {this.renderError("name")}
                 </View>
                 <View>
                     <Text>Email</Text>

@@ -7,6 +7,7 @@ import {
     SUBMIT_STORY,
     UPDATE_STORY,
     DELETE_STORY,
+    PROFILE_PIC_CHANGED,
 } from "../types";
 
 const initialState = {
@@ -129,6 +130,17 @@ export default function(state = initialState, action) {
                 hasMoreItems: false,
                 loading: false,
             };
+        }
+        case PROFILE_PIC_CHANGED: {
+            const updatedUser = action.payload;
+            const {stories} = state;
+            const updatedStories = stories.map(story => {
+                if (story.user.id === updatedUser.id) {
+                    return {...story, user: {...updatedUser}};
+                }
+                return story;
+            });
+            return {...state, stories: updatedStories};
         }
         default: {
             return state;

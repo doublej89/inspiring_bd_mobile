@@ -25,6 +25,7 @@ import {
     SEE_USER_PROFILE,
     UNSEE_USER_PROFILE,
     CONNECTION_CHANGED,
+    PROFILE_PIC_CHANGED,
 } from "../types";
 import axios from "axios";
 import {strim} from "../utils";
@@ -428,7 +429,13 @@ export const uploadProfilePhoto = (
         )
         .then(response => {
             if (response.data.user) {
-                dispatch({type: FETCH_USER, payload: response.data.user});
+                dispatch({type: FETCH_USER, payload: response.data});
+                if (avatar !== null) {
+                    dispatch({
+                        type: PROFILE_PIC_CHANGED,
+                        payload: response.data.user,
+                    });
+                }
             }
         })
         .catch(err => {

@@ -13,6 +13,7 @@ import {login, clearAuthError} from "../actions/auth";
 import {changeConnectionState} from "../actions/content";
 import {validationService} from "../validation/service";
 import NetInfo from "@react-native-community/netinfo";
+import {showMessage} from "react-native-flash-message";
 
 class Login extends Component {
     constructor(props) {
@@ -75,7 +76,7 @@ class Login extends Component {
             credentials[key] = input.value;
         }
         this.setState({inputs: submittedInputs}, () => {
-            login(credentials, this.props.navigation);
+            login(credentials, this.props.navigation, showMessage);
         });
     }
 
@@ -162,4 +163,8 @@ const mapStateToProps = state => ({
     auth: state.auth,
 });
 
-export default connect(mapStateToProps, {login, changeConnectionState})(Login);
+export default connect(mapStateToProps, {
+    login,
+    changeConnectionState,
+    clearAuthError,
+})(Login);

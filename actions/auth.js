@@ -8,7 +8,7 @@ import {
 import decode from "jwt-decode";
 import axios from "axios";
 
-export const login = (credentials, navigation) => dispatch => {
+export const login = (credentials, navigation, showMessage) => dispatch => {
     axios
         .post(
             "https://dev.inspiringbangladesh.com/api/v1/auth/login",
@@ -34,7 +34,13 @@ export const login = (credentials, navigation) => dispatch => {
                     currentUserId: +decoded.user_id,
                 },
             });
-            if (response.data.auth_token) navigation.navigate("App");
+            if (response.data.auth_token) {
+                navigation.navigate("App");
+                showMessage({
+                    message: "Logged in successfully",
+                    type: "success",
+                });
+            }
         })
         .catch(err => {
             console.log("Something went wrong! ");
@@ -61,7 +67,7 @@ export const signup = (credentials, navigation, showMessage) => dispatch => {
             if (response.data.auth_token) {
                 navigation.navigate("App");
                 showMessage({
-                    title: response.data.message,
+                    message: response.data.message,
                     type: "success",
                 });
             }

@@ -39,6 +39,7 @@ class CommentList extends Component {
             newReplyContent: "",
             storyId: null,
             commentId: null,
+            parentComment: null,
             repliesCount: 0,
             updateSelected: false,
             isMenuVisible: false,
@@ -56,15 +57,21 @@ class CommentList extends Component {
 
     componentDidMount() {
         const {navigation, loadReplies, authToken} = this.props;
-        let storyId = +JSON.stringify(navigation.getParam("storyId", "NO-ID"));
-        let commentId = +JSON.stringify(
-            navigation.getParam("commentId", "NO-ID"),
+        //let storyId = +JSON.stringify(navigation.getParam("storyId", "NO-ID"));
+        let parentComment = navigation.getParam("parentComment", {});
+        let storyId = parentComment.story_id;
+        let commentId = parentComment.id;
+        let repliesCount = parentComment.replies_count;
+        // let commentId = +JSON.stringify(
+        //     navigation.getParam("commentId", "NO-ID"),
+        // );
+        // let repliesCount = +JSON.stringify(
+        //     navigation.getParam("repliesCount", "0"),
+        // );
+        this.setState({storyId, commentId, repliesCount, parentComment}, () =>
+            loadReplies(storyId, commentId, authToken, repliesCount),
         );
-        let repliesCount = +JSON.stringify(
-            navigation.getParam("repliesCount", "0"),
-        );
-        this.setState({storyId, commentId, repliesCount});
-        loadReplies(storyId, commentId, authToken, repliesCount);
+
         NetInfo.isConnected.addEventListener(
             "connectionChange",
             isConnected => {
@@ -86,12 +93,14 @@ class CommentList extends Component {
     }
 
     componentWillUnmount() {
+        console.log("replies list unmounted");
         NetInfo.isConnected.removeEventListener(
             "connectionChange",
             isConnected => {
                 this.props.changeConnectionState(isConnected);
             },
         );
+        this.props.closeRepliesList();
     }
 
     toggleEditMenu(
@@ -181,10 +190,12 @@ class CommentList extends Component {
             isMenuVisible,
             updateSelected,
             storyId,
+            parentComment,
         } = this.state;
+        console.log(parentComment);
         return (
             <View style={{flexDirection: "column", flex: 1}}>
-                <View style={{flex: 0.9}}>
+                <View style={{flex: 0.9, alignItems: "flex-end"}}>
                     {/* <View style={{flexDirection: "row"}}>
                         <Button
                             title="Go back"
@@ -195,6 +206,14 @@ class CommentList extends Component {
                             onPress={() => this.props.screenProps.dismiss()}
                         />
                     </View> */}
+                    {parentComment && (
+                        <View style={{alignSelf: "stretch", marginBottom: 15}}>
+                            <Comment
+                                comment={parentComment}
+                                currentUser={false}
+                            />
+                        </View>
+                    )}
                     <FlatList
                         data={replies}
                         renderItem={({item}) => (
@@ -212,6 +231,7 @@ class CommentList extends Component {
                         )}
                         keyExtractor={item => item.id.toString()}
                         extraData={this.props}
+                        style={{width: "90%"}}
                         // {...this._panResponder.panHandlers}
                     />
                 </View>

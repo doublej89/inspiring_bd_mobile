@@ -56,7 +56,7 @@ class Profile extends Component {
 
     componentWillUnmount() {
         this.didFocusSubscription.remove();
-        this.didBlurSubscription.remove();
+        // this.didBlurSubscription.remove();
         NetInfo.isConnected.removeEventListener(
             "connectionChange",
             isConnected => {
@@ -183,7 +183,6 @@ class Profile extends Component {
 
     render() {
         const {user, currentUserId, follow, userId, authToken} = this.props;
-        console.log(user);
         return user ? (
             <ScrollView
                 style={{padding: 20, flex: 1, backgroundColor: "#F8F9FF"}}>
@@ -311,6 +310,8 @@ const styles = StyleSheet.create({
         alignItems: "stretch",
         borderRadius: 10,
         justifyContent: "center",
+        paddingBottom: 25,
+        marginBottom: 15,
     },
     stat: {
         backgroundColor: "white",

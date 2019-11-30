@@ -45,7 +45,7 @@ function Story(props) {
             </View>
             <View style={styles.singlePostContent}>
                 <View style={styles.singlePostUser}>
-                    <View style={{flexDirection: "row"}}>
+                    <View style={{flexDirection: "row", marginBottom: 10}}>
                         {story && story.user && (
                             <Image
                                 source={{uri: story.user.avatar_url}}
@@ -110,10 +110,10 @@ function Story(props) {
                         fontSize: 12,
                     }}
                 />
-                <Text style={{color: "#7A7979", marginTop: 5}}>
+                <Text style={{color: "#7A7979", marginTop: 10, fontSize: 16}}>
                     {cleanHtml(story.description)}
                 </Text>
-                <TouchableHighlight
+                <TouchableOpacity
                     onPress={() => {
                         //this._panel.show();
                         navigation.navigate("CommentsList", {
@@ -123,18 +123,27 @@ function Story(props) {
                         });
                     }}>
                     <View style={styles.singlePostStat}>
-                        <LovedIcon
-                            style={{height: 30, width: 30, color: "red"}}
-                        />
-                        <Text>{story.inspirations_count}</Text>
-                        <CommentIcon style={{height: 30, width: 30}} />
-                        <Text>{story.comments_count}</Text>
+                        <View style={{flexDirection: "row"}}>
+                            <LovedIcon
+                                style={{height: 30, width: 30, color: "red"}}
+                            />
+                            <Text style={{fontSize: 16}}>
+                                {story.inspirations_count}
+                            </Text>
+                        </View>
+                        <View style={{flexDirection: "row"}}>
+                            <CommentIcon style={{height: 30, width: 30}} />
+                            <Text style={{fontSize: 16}}>
+                                {story.comments_count}
+                            </Text>
+                        </View>
                     </View>
-                </TouchableHighlight>
+                </TouchableOpacity>
                 <View
                     style={{
                         backgroundColor: "#D8D8D8",
                         height: 1,
+                        marginBottom: 12,
                     }}></View>
                 <View
                     style={{
@@ -160,7 +169,7 @@ function Story(props) {
                                 height: 30,
                             }}
                         /> */}
-                            <HeartIcon style={{height: 10, width: 10}} />
+                            <HeartIcon width={40} height={40} />
                             <Text style={{fontSize: 16}}>Love</Text>
                         </View>
                     </TouchableOpacity>
@@ -187,7 +196,7 @@ function Story(props) {
                                 height: 30,
                             }}
                         /> */}
-                            <ReplyIcon style={{height: 25, width: 25}} />
+                            <ReplyIcon width={40} height={40} />
                             <Text style={{fontSize: 16}}>Reply</Text>
                         </View>
                     </TouchableOpacity>
