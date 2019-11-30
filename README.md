@@ -1,6 +1,6 @@
 # Inspirng Bangladesh Mobile
 
-To setup locally on Windows, follow the instructions given in the official react native documentation:
+To setup locally on Windows, follow the instructions given in the Getting Started page of the official react native documentation:
 
 https://facebook.github.io/react-native/docs/getting-started
 
